@@ -2,9 +2,13 @@
 import pandas as pd
 import numpy as np
 from itertools import product
-from multiprocessing import Pool
+from multiprocessing import Pool, Manager
 import math
 from datetime import datetime
+from itertools import ifilter
+import copy
+from itertools import islice
+
 
 def generate_a_series_of_attempts(name, max_volume, times):
     return pd.Series(data=np.linspace(0, max_volume, num=times), name=name)
@@ -22,10 +26,35 @@ def generate_map_of_attempts(df):
     return result
 
 
-def generate_frame_sequence(signal_set, strongest_signal):
-    from itertools import ifilter
-    import copy
+def calculate_record_size(columns_seeds):
+    total = 1
 
+    for s in columns_seeds:
+        total *= len(s)
+
+    return total
+
+
+class SmallTask:
+    def __init__(self, no, column_names, column_seeds, default_page_size=100* 1000):
+        self.no = no
+        self.column_names = column_names
+        self.column_seeds = column_seeds
+
+        self.record_size = calculate_record_size(column_seeds)
+        self.page_size = default_page_size
+        self.start = 0
+        self.stop = self.start + default_page_size
+
+    def update(self):
+        self.start = self.stop
+        self.stop = self.start + self.page_size
+
+    def isComplete(self):
+        return self.start > self.record_size
+
+
+def generate_initial_small_task_sequence(signal_set, strongest_signal):
     columns = signal_set.keys()
     total_frame = strongest_signal[u'times']
     name_of_strongest_signal = strongest_signal[u'信号名称']
@@ -37,15 +66,13 @@ def generate_frame_sequence(signal_set, strongest_signal):
 
     frame_sequence = []
     for i in range(total_frame):
-        no = i
-
         frame_column = copy.copy(shared_columns)
         frame_column.append(name_of_strongest_signal)
 
         frame_values = copy.copy(common_attempts)
         frame_values.append(sliced_attempts_of_strongest_signal[i])
 
-        frame_sequence.append((no, frame_column, frame_values))
+        frame_sequence.append(SmallTask(i, frame_column, frame_values))
 
     return frame_sequence
 
@@ -145,31 +172,40 @@ def extend_columns(target_df, standard_deviation_of_signals, expected_return_of_
     return target_df
 
 
-def generate_matrix_of_signals_by(frame):
-    no, columns, values = frame
-    print "begin to create frame {}".format(no)
-    df = pd.DataFrame(data=product(*values), columns=columns)
-    print "The creation of frame {} is complete".format(no)
+def generate_matrix_of_signals_by(queue, smart_task):
+    df = pd.DataFrame(data=islice(product(*smart_task.column_seeds), smart_task.start, smart_task.stop),
+                      columns=smart_task.column_names)
+    smart_task.update()
+
+    if not smart_task.isComplete():
+        queue.put(smart_task)
+
+    print "The completion of frame {} : record_size-{}, finished-{}, percentage-{}% " \
+        .format(smart_task.no, smart_task.record_size, smart_task.start,
+                round(smart_task.start * 1.0 * 100 / smart_task.record_size, 2))
     # df.to_csv("temps/temp{}.csv".format(no), encoding="utf-8")
     # print "frame {} writing is finished".format(no)
 
     return df
 
-def predict(frame, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
-                   relationship_df, principal):
+
+def predict(queue, smart_task, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
+            relationship_df, principal):
     start_time = datetime.now()
-    df = generate_matrix_of_signals_by(frame)
+
+    df = generate_matrix_of_signals_by(queue, smart_task)
 
     target_df = extend_columns(df, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
-                   relationship_df, principal=principal)
+                               relationship_df, principal=principal)
 
-    filtered_df = target_df.loc[target_df.apply(filter, axis = 1),:]
+    filtered_df = target_df.loc[target_df.apply(filter, axis=1), :]
 
     time_elapsed = datetime.now() - start_time
 
     print 'Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed)
 
     return filtered_df
+
 
 if __name__ == '__main__':
     start_time = datetime.now()
@@ -196,7 +232,7 @@ if __name__ == '__main__':
     signals_df = signals_df.sort_values(['times'], ascending=False)
     signals_df.reset_index(drop=True, inplace=True)
 
-    # 5.generate the matrix
+    # 5.divide the whole work into small tasks
     strongest_signal = signals_df.iloc[0]
     signal_set = generate_map_of_attempts(signals_df)
 
@@ -204,18 +240,40 @@ if __name__ == '__main__':
     expected_return_of_signals = generate_mapping(summary_df, related_columns=[u'信号名称', u'预期回报'])
     net_withdrawal_of_signals = generate_mapping(summary_df, related_columns=[u'信号名称', u'净值回撤'])
 
-    p = Pool(1)
+    small_task_sequence = generate_initial_small_task_sequence(signal_set, strongest_signal)
+    cpu_num = 5
+
+    p = Pool(cpu_num)
+    m = Manager()
+    queue = m.Queue(len(small_task_sequence) + cpu_num)
+
+    for st in small_task_sequence:
+        queue.put(st)
+
     async_result_set = []
-    for frame in  generate_frame_sequence(signal_set, strongest_signal):
-        temp = p.apply_async(predict,(frame,standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
-                   relationship_df, 19519.18))
+    result_set = []
+    while True:
 
-        async_result_set.append(temp)
+        if (len(async_result_set) < cpu_num):
+            st = queue.get()
 
+            temp = p.apply_async(predict, (
+                queue, st, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
+                relationship_df, 19519.18))
 
-    for r in async_result_set:
-        r.wait()
+            async_result_set.append(temp)
+        else:
 
+            ar = async_result_set.pop(0)
+            result_set.append(ar.get())
+
+        if queue.empty():
+            break
+
+    p.close()
+    p.join()
+
+    # 6.merge all the results
     final_df = pd.concat([r.get() for r in async_result_set], ignore_index=True)
     final_df.to_csv("outputs/final_prediction.csv", encoding="utf-8")
     time_elapsed = datetime.now() - start_time
