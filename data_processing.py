@@ -196,6 +196,9 @@ def predict(queue, smart_task, standard_deviation_of_signals, expected_return_of
 
     df = generate_matrix_of_signals_by(queue, smart_task)
 
+
+    #print df.head()
+
     target_df = extend_columns(df, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
                                relationship_df, principal=principal)
 
@@ -220,7 +223,7 @@ if __name__ == '__main__':
 
     # 0.1>list all available signals
     signals = summary_df[u'信号名称'].to_list()
-    print "all available signals: {}".format(",".join(signals))
+    print "0->all available signals: {}".format(",".join(signals))
 
     # 1.Load the relation table
     # 1.1> define data types in relation table
@@ -233,7 +236,7 @@ if __name__ == '__main__':
     # fill zero for nan
     relationship_df = relationship_df.fillna(0)
     signals_involved = relationship_df.columns.to_list()
-    print "the relationship among those signals: {}".format(",".join(signals_involved))
+    print "1->the relationship among those signals: {}".format(",".join(signals_involved))
 
 
     # 2.extract the volume of sales
@@ -247,6 +250,7 @@ if __name__ == '__main__':
 
     # 3.select the desirable signals
     desirable_signals = [u'DM0066', u'CJM995', u'DEMOZ', u'DM8034']
+    print "3->desired_signals: {}".format(",".join(desirable_signals))
 
     # 3.1>check whether the signals is valid
     for s in desirable_signals:
@@ -276,6 +280,7 @@ if __name__ == '__main__':
     # 4.1> define the number of cup in use and balance
     cpu_num = 5
     balance = 19519.18
+    print "4->cup in use: {}, current balance: {} ".format(cpu_num, balance)
 
     p = Pool(cpu_num)
     m = Manager()
@@ -307,9 +312,10 @@ if __name__ == '__main__':
     p.close()
     p.join()
 
+
     # 6.merge all the results
     final_df = pd.concat([r.get() for r in async_result_set], ignore_index=True)
-    final_df.to_csv("outputs/final_prediction.csv", encoding="utf-8")
+    final_df.to_csv("outputs/final_prediction.csv", encoding="utf-8", float_format="%.2f")
     time_elapsed = datetime.now() - start_time
     print "Prediction is completed ........."
     print 'Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed)
