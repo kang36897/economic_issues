@@ -211,12 +211,12 @@ if __name__ == '__main__':
     start_time = datetime.now()
     print "begin to predict ........."
     # 1.Load the relationship table
-    relationship_df = pd.read_excel('inputs/raw.xlsx', sheet_name=3, index_col=0)
+    relationship_df = pd.read_excel('inputs/relations.xlsx', sheet_name=0, index_col=0)
     # fill zero for nan
     relationship_df = relationship_df.fillna(0)
 
     # 2.load the summary table
-    summary_df = pd.read_excel('inputs/raw.xlsx', sheet_name=0, na_values='-')
+    summary_df = pd.read_excel('inputs/signals.xlsx', sheet_name=0, na_values='-')
     # delete unneeded columns
     del summary_df[u'备注']
     summary_df = summary_df.fillna(0)
@@ -226,7 +226,8 @@ if __name__ == '__main__':
     valid_volume_df.loc[:, 'times'] = valid_volume_df.loc[:, u'最小手数'].map(lambda x: int(x / 0.01 + 1))
 
     # 4.select the desirable signals
-    desirable_signals = [u'CJM622', u'CJM815', u'DM0066', u'CJM995', u'DEMOZ', u'DM8034', u'ForexRob', u'LYP']
+    # desirable_signals = [u'CJM622', u'CJM815', u'DM0066', u'CJM995', u'DEMOZ', u'DM8034', u'ForexRob', u'LYP']
+    desirable_signals = [u'DM0066', u'CJM995', u'DEMOZ', u'DM8034', u'ForexRob', u'LYP']
 
     signals_df = valid_volume_df.loc[valid_volume_df.loc[:, u'信号名称'].map(lambda x: x in desirable_signals)]
     signals_df = signals_df.sort_values(['times'], ascending=False)
@@ -254,7 +255,7 @@ if __name__ == '__main__':
     result_set = []
     while True:
 
-        if (len(async_result_set) < cpu_num):
+        if len(async_result_set) < cpu_num:
             st = queue.get()
 
             temp = p.apply_async(predict, (
