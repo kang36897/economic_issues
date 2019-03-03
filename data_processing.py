@@ -36,7 +36,7 @@ def calculate_record_size(columns_seeds):
 
 
 class SmallTask:
-    def __init__(self, no, column_names, column_seeds, default_page_size=100* 1000):
+    def __init__(self, no, column_names, column_seeds, default_page_size=100 * 1000):
         self.no = no
         self.column_names = column_names
         self.column_seeds = column_seeds
@@ -127,16 +127,16 @@ def calculate_return(row, names_of_signals, expected_return_of_signals):
 
 
 def calculate_multiple(row):
-    if row[u'协方差'] == 0:
+    if row["corelation"] == 0:
         return 0
 
-    return row[u'本金'] / row[u'协方差']
+    return row["balance"] / row["corelation"]
 
 
 def calculate_sharp_rate(row):
-    if row[u'协方差'] == 0:
+    if row["corelation"] == 0:
         return 0
-    return (row[u'预期回报'] * 12 - row[u'本金'] * 0.05) / row[u'协方差']
+    return (row["exp_return"] * 12 - row["balance"] * 0.05) / row["corelation"]
 
 
 def filter(row):
@@ -145,10 +145,11 @@ def filter(row):
     :param row:
     :return:
     """
-    if row[u'倍数'] < 10 or row[u'回撤%'] > 30 or row[u'预期回报%'] < 5:
+    if row["times"] < 10 or row["drawback_ratio"] > 30 or row["exp_return_ratio"] < 5:
         return False
 
     return True
+
 
 
 def extend_columns(target_df, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
@@ -156,18 +157,18 @@ def extend_columns(target_df, standard_deviation_of_signals, expected_return_of_
     print "begin to extend columns"
     names_of_signals = target_df.columns
 
-    target_df[u'协方差'] = target_df.apply(calculate_covariance, axis=1,
-                                        args=(names_of_signals, standard_deviation_of_signals, relationship_df))
-    target_df[u'预期回报'] = target_df.apply(calculate_return, axis=1, args=(names_of_signals, expected_return_of_signals))
-    target_df[u'回撤'] = target_df.apply(calculate_covariance, axis=1,
+    target_df["corelation"] = target_df.apply(calculate_covariance, axis=1,
+                                              args=(names_of_signals, standard_deviation_of_signals, relationship_df))
+    target_df["exp_return"] = target_df.apply(calculate_return, axis=1, args=(names_of_signals, expected_return_of_signals))
+    target_df["drawback"] = target_df.apply(calculate_covariance, axis=1,
                                        args=(names_of_signals, net_withdrawal_of_signals, relationship_df))
 
-    target_df[u'本金'] = principal
-    target_df[u'倍数'] = target_df.apply(calculate_multiple, axis=1)
-    target_df[u'回撤%'] = target_df[u'回撤'] * 100 / target_df[u'本金']
-    target_df[u'预期回报%'] = target_df[u'预期回报'] * 100 / target_df[u'本金']
-    target_df = target_df.round({u'回撤%': 2, u'预期回报%': 2})
-    target_df[u'Sharp率'] = target_df.apply(calculate_sharp_rate, axis=1)
+    target_df["balance"] = principal
+    target_df["times"] = target_df.apply(calculate_multiple, axis=1)
+    target_df["drawback_ratio"] = target_df["drawback"] * 100 / target_df["balance"]
+    target_df["exp_return_ratio"] = target_df["exp_return"] * 100 / target_df["balance"]
+    target_df = target_df.round({"drawback_ratio": 2, "exp_return_ratio": 2})
+    target_df["sharp_ratio"] = target_df.apply(calculate_sharp_rate, axis=1)
     print "The extention of columns is complete"
     return target_df
 
@@ -210,30 +211,59 @@ def predict(queue, smart_task, standard_deviation_of_signals, expected_return_of
 if __name__ == '__main__':
     start_time = datetime.now()
     print "begin to predict ........."
-    # 1.Load the relationship table
-    relationship_df = pd.read_excel('inputs/relations.xlsx', sheet_name=0, index_col=0)
-    # fill zero for nan
-    relationship_df = relationship_df.fillna(0)
 
-    # 2.load the summary table
+    # 0.load the signal table
     summary_df = pd.read_excel('inputs/signals.xlsx', sheet_name=0, na_values='-')
     # delete unneeded columns
     del summary_df[u'备注']
     summary_df = summary_df.fillna(0)
 
-    # 3.extract the volume of sales
-    valid_volume_df = summary_df[[u'信号名称', u'最小手数']]
-    valid_volume_df.loc[:, 'times'] = valid_volume_df.loc[:, u'最小手数'].map(lambda x: int(x / 0.01 + 1))
+    # 0.1>list all available signals
+    signals = summary_df[u'信号名称'].to_list()
+    print "all available signals: {}".format(",".join(signals))
 
-    # 4.select the desirable signals
-    # desirable_signals = [u'CJM622', u'CJM815', u'DM0066', u'CJM995', u'DEMOZ', u'DM8034', u'ForexRob', u'LYP']
-    desirable_signals = [u'DM0066', u'CJM995', u'DEMOZ', u'DM8034', u'ForexRob', u'LYP']
+    # 1.Load the relation table
+    # 1.1> define data types in relation table
+    relations_column_types = {}
+    for item in signals:
+        relations_column_types[item] = np.float32
 
-    signals_df = valid_volume_df.loc[valid_volume_df.loc[:, u'信号名称'].map(lambda x: x in desirable_signals)]
+    # 1.2> loading this relation table
+    relationship_df = pd.read_excel('inputs/relations.xlsx', sheet_name=0, index_col=0, dtype=relations_column_types)
+    # fill zero for nan
+    relationship_df = relationship_df.fillna(0)
+    signals_involved = relationship_df.columns.to_list()
+    print "the relationship among those signals: {}".format(",".join(signals_involved))
+
+
+    # 2.extract the volume of sales
+    # valid_volume_df = summary_df[[u'信号名称', u'最小手数']]
+    # valid_volume_df.loc['times'] = valid_volume_df[u'最小手数'].map(lambda x: int(x / 0.01 + 1)) todo test whye
+
+    valid_volume_df = summary_df[[u'信号名称', u'最小手数', u'测试倍数']].copy()
+    valid_volume_df.loc[:, u'最小手数'] = valid_volume_df[u'最小手数'].astype(np.float32)
+    valid_volume_df.loc[:, u'测试倍数'] = valid_volume_df[u'测试倍数'].astype(np.int16)
+    valid_volume_df.loc[:, 'times'] = (valid_volume_df[u'最小手数'] * valid_volume_df[u'测试倍数'] / 0.01 + 1).astype(np.int16)
+
+    # 3.select the desirable signals
+    desirable_signals = [u'DM0066', u'CJM995', u'DEMOZ', u'DM8034']
+
+    # 3.1>check whether the signals is valid
+    for s in desirable_signals:
+        if s not in signals_involved:
+            raise Exception("signal: {} is not in relation table".format(s))
+        elif s not in signals:
+            raise Exception("signal: {} is not available".format(s))
+        else:
+            print "check process is completed"
+
+    signals_df = valid_volume_df.loc[valid_volume_df[u'信号名称'].map(lambda x: x in desirable_signals)]
+
     signals_df = signals_df.sort_values(['times'], ascending=False)
     signals_df.reset_index(drop=True, inplace=True)
 
-    # 5.divide the whole work into small tasks
+
+    # 4.divide the whole work into small tasks
     strongest_signal = signals_df.iloc[0]
     signal_set = generate_map_of_attempts(signals_df)
 
@@ -242,7 +272,10 @@ if __name__ == '__main__':
     net_withdrawal_of_signals = generate_mapping(summary_df, related_columns=[u'信号名称', u'净值回撤'])
 
     small_task_sequence = generate_initial_small_task_sequence(signal_set, strongest_signal)
+
+    # 4.1> define the number of cup in use and balance
     cpu_num = 5
+    balance = 19519.18
 
     p = Pool(cpu_num)
     m = Manager()
@@ -260,7 +293,7 @@ if __name__ == '__main__':
 
             temp = p.apply_async(predict, (
                 queue, st, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
-                relationship_df, 19519.18))
+                relationship_df, balance))
 
             async_result_set.append(temp)
         else:
