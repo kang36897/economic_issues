@@ -249,7 +249,7 @@ if __name__ == '__main__':
     valid_volume_df.loc[:, 'times'] = (valid_volume_df[u'最小手数'] * valid_volume_df[u'测试倍数'] / 0.01 + 1).astype(np.int16)
 
     # 3.select the desirable signals
-    desirable_signals = [u'DM0066', u'CJM995', u'DEMOZ', u'DM8034']
+    desirable_signals = [u'DM0066', u'CJM995']
     print "3->desired_signals: {}".format(",".join(desirable_signals))
 
     # 3.1>check whether the signals is valid
