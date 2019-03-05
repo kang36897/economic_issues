@@ -145,8 +145,8 @@ def filter(row):
     :param row:
     :return:
     """
-    if row["times"] < 10 or row["drawback_ratio"] > 30 or row["exp_return_ratio"] < 5:
-        return False
+    # if row["drawback_ratio"] > 30:
+    #     return False
 
     return True
 
@@ -174,8 +174,9 @@ def extend_columns(target_df, standard_deviation_of_signals, expected_return_of_
 
 
 def generate_matrix_of_signals_by(queue, smart_task):
-    df = pd.DataFrame(data=islice(product(*smart_task.column_seeds), smart_task.start, smart_task.stop),
-                      columns=smart_task.column_names)
+    df = pd.DataFrame(data=islice(product(smart_task.column_seeds), smart_task.start, smart_task.stop),
+                      columns=smart_task.column_names, dtype=np.float16)
+    df = df.round(decimals=2)
     smart_task.update()
 
     if not smart_task.isComplete():
@@ -184,7 +185,7 @@ def generate_matrix_of_signals_by(queue, smart_task):
     print "The completion of frame {} : record_size-{}, finished-{}, percentage-{}% " \
         .format(smart_task.no, smart_task.record_size, smart_task.start,
                 round(smart_task.start * 1.0 * 100 / smart_task.record_size, 2))
-    # df.to_csv("temps/temp{}.csv".format(no), encoding="utf-8")
+    df.to_csv("temps/temp{}.csv".format(smart_task.no), encoding="utf-8")
     # print "frame {} writing is finished".format(no)
 
     return df
@@ -197,7 +198,7 @@ def predict(queue, smart_task, standard_deviation_of_signals, expected_return_of
     df = generate_matrix_of_signals_by(queue, smart_task)
 
 
-    #print df.head()
+    print df.head()
 
     target_df = extend_columns(df, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals,
                                relationship_df, principal=principal)
@@ -279,7 +280,7 @@ if __name__ == '__main__':
 
     # 4.1> define the number of cup in use and balance
     cpu_num = 5
-    balance = 19519.18
+    balance = 15083
     print "4->cup in use: {}, current balance: {} ".format(cpu_num, balance)
 
     p = Pool(cpu_num)
