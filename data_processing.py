@@ -62,7 +62,12 @@ def generate_initial_small_task_sequence(signal_set, strongest_signal):
     sliced_attempts_of_strongest_signal = [[attempts_of_strongest_signal[i]] for i in range(total_frame)]
 
     shared_columns = [c for c in ifilter(lambda x: x != name_of_strongest_signal, columns)]
-    common_attempts = [signal_set[c].values for c in shared_columns]
+
+    common_attempts = []
+    for c in shared_columns:
+        series = signal_set[c].values
+        temp = list(series.round(2))
+        common_attempts.append(temp)
 
     frame_sequence = []
     for i in range(total_frame):
@@ -70,7 +75,7 @@ def generate_initial_small_task_sequence(signal_set, strongest_signal):
         frame_column.append(name_of_strongest_signal)
 
         frame_values = copy.copy(common_attempts)
-        frame_values.append(sliced_attempts_of_strongest_signal[i])
+        frame_values.insert(0, sliced_attempts_of_strongest_signal[i])
 
         frame_sequence.append(SmallTask(i, frame_column, frame_values))
 
@@ -174,9 +179,10 @@ def extend_columns(target_df, standard_deviation_of_signals, expected_return_of_
 
 
 def generate_matrix_of_signals_by(queue, smart_task):
-    df = pd.DataFrame(data=islice(product(smart_task.column_seeds), smart_task.start, smart_task.stop),
-                      columns=smart_task.column_names, dtype=np.float16)
+    df = pd.DataFrame(data=islice(product(*smart_task.column_seeds), smart_task.start, smart_task.stop),
+                      columns=smart_task.column_names)
     df = df.round(decimals=2)
+
     smart_task.update()
 
     if not smart_task.isComplete():
