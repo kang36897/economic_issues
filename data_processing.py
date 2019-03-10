@@ -12,6 +12,7 @@ if __name__ == '__main__':
     balance = 15083
     cpu_num = 5
     desired_signals = [u'DM0066', u'CJM995']
+
     cook = Cook()
     cook.collectPotato(path.abspath("inputs/relations.xlsx"))
     cook.collectTomato(path.abspath("inputs/signals.xlsx"))
