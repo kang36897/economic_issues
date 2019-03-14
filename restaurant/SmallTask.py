@@ -20,13 +20,10 @@ class SmallTask:
         self.column_seeds = column_seeds
 
         self.record_size = calculate_record_size(column_seeds)
-        if self.record_size < 1000:
-            self.page_size = self.record_size
-        else:
-            self.page_size = min(default_page_size, self.page_size)
+        self.page_size = min(default_page_size, self.record_size)
 
         self.start = start
-        self.stop = self.start +  self.page_size
+        self.stop = self.start + self.page_size
         self.is_complete = False
 
     def generateNextTask(self):

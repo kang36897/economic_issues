@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import unittest
-from Cook import Cook
-from os import path
 from itertools import product
-import numpy as np
+from os import path
 
-from SmallTask import SmallTask
-from Utils import compareListIgnoreOrder
+import numpy as np
+from restaurant.Cook import Cook
+from restaurant.SmallTask import SmallTask
+
+from restaurant.Utils import compareListIgnoreOrder
+
 
 class CookTest(unittest.TestCase):
 

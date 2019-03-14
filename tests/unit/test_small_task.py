@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from SmallTask import SmallTask
+from restaurant.SmallTask import SmallTask
+
+
 class SmallTaskTest(unittest.TestCase):
 
     def test_isDone_after_creation(self):

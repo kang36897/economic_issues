@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import unittest
-from Utils import  compareListIgnoreOrder
+
+from restaurant.Utils import compareListIgnoreOrder
+
 
 class UtilsTest(unittest.TestCase):
 

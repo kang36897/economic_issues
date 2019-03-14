@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-import unittest
-
-from Chef import Chef, calculate_covariance , calculate_return, calculate_multiple, calculate_sharp_rate
-from Cook import Cook
-from SmallTask import SmallTask
-from multiprocessing import Manager, Queue
-import pandas as pd
-from Utils import compareListIgnoreOrder
 import math
+import unittest
+from multiprocessing import Manager
+
+import pandas as pd
+from restaurant.Chef import Chef, calculate_covariance, calculate_multiple, calculate_return, calculate_sharp_rate
+from restaurant.Cook import Cook
+from restaurant.SmallTask import SmallTask
+
+from restaurant.Utils import compareListIgnoreOrder
+
 
 def filter(row):
     """
@@ -70,6 +72,16 @@ class ChefTest(unittest.TestCase):
 
         expected = math.sqrt(math.pow(0.1 * 0.3, 2) + math.pow(0.2 * 0.7, 2) + 2 * (0.1 * 0.3) * (0.2 * 0.7) * 0.5)
         self.assertEqual(expected,calculate_covariance(row, names_of_signals, standard_deviation_of_signals, relationship))
+
+    def test_calculate_covariance_1(self):
+        row = {"a": 0.1, "b": 0.2}
+        names_of_signals = ['a']
+        standard_deviation_of_signals = {'a': 0.3, 'b': 0.7}
+        relationship = {('a', 'a'): 1, ('b', 'b'): 1, ('a', 'b'): 0.5, ('b', 'a'): 0.5}
+
+        expected = math.sqrt(math.pow(0.1 * 0.3, 2))
+        self.assertEqual(expected,
+                         calculate_covariance(row, names_of_signals, standard_deviation_of_signals, relationship))
 
     def test_calculate_covariance_3(self):
         row = {"a": 0.1, "b": 0.2, 'c': 0.3}

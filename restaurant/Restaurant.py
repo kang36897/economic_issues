@@ -3,6 +3,7 @@ from multiprocessing import Pool, Manager
 
 from Chef import Chef
 import pandas as pd
+from os import path
 
 def filter(row):
     """
@@ -14,6 +15,7 @@ def filter(row):
     #     return False
 
     return True
+
 def wrapper(chef, st):
     return chef.handleOrder(st)
 
@@ -26,17 +28,13 @@ class Restaurant:
         self.servant = servant
 
         self.queue = self.m.Queue()
-        # self.availableChefs = self.m.Queue(self.cpu_num)
         self.balance = balance
 
-    def serveCustomer(self, desired_signals):
+    def serveCustomer(self, desired_signals, delivery_path = None, ):
         taskSequence = self.servant.receiveOrders(desired_signals)
 
         for st in taskSequence:
             self.queue.put(st)
-
-        # for i in range(self.cpu_num):
-        #     self.availableChefs.put()
 
         async_result_set = []
         result_set = []
@@ -61,15 +59,20 @@ class Restaurant:
                 ar = async_result_set.pop(0)
 
                 dish = ar.get()
-                # self.availableChefs.put(chef)
-
-                result_set.append(self.servant.loadPlate(dish, filter))
-
+                result_set.append(dish)
             if self.queue.empty():
                 break
 
         self.p.close()
         self.p.join()
 
-        final_df = pd.concat([r.get() for r in async_result_set], ignore_index=True)
-        final_df.to_csv("outputs/final_prediction.csv", encoding="utf-8", float_format="%.2f")
+        result_set.extend([r.get() for r in async_result_set])
+
+        dishesAfterAddressing = [self.servant.loadPlate(dish, filter) for dish in result_set]
+
+        final_df = pd.concat(dishesAfterAddressing, ignore_index=True)
+
+        if delivery_path is not None:
+            final_df.to_csv(path.join(delivery_path, "{}.csv".format("+".join(desired_signals))), encoding="utf-8", float_format="%.2f")
+
+        return final_df

@@ -70,7 +70,8 @@ class Cook:
     def collectTomato(self, inputFile):
         df = pd.read_excel(inputFile, sheet_name=0, na_values='-')
         # delete unneeded columns
-        del df[u'备注']
+        if u'备注' in df.columns:
+            del df[u'备注']
 
         self.__signal_info = df.fillna(0)
 
