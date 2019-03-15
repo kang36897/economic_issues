@@ -29,6 +29,8 @@ class Cook:
 
     def collectRelationMaterial(self, inputFile):
         df = pd.read_excel(inputFile, sheet_name=0, index_col=0)
+        df.fillna(0, inplace=True)
+        df.replace(np.inf, 0)
         df = df.round(4)
         self.__relationship = df.astype(np.float32)
         return self.__relationship
@@ -68,7 +70,7 @@ class Cook:
         return self.involvedSignals
 
     def collectTomato(self, inputFile):
-        df = pd.read_excel(inputFile, sheet_name=0, na_values='-')
+        df = pd.read_excel(inputFile, sheet_name=0, na_values=['-','#N/A', 'NaN'])
         # delete unneeded columns
         if u'备注' in df.columns:
             del df[u'备注']
@@ -78,6 +80,7 @@ class Cook:
         self.involvedSignals = df[u'信号名称'].to_list()
 
         self.__signal_info = df.copy()[[u'信号名称', u'标准差', u'预期回报', u'净值回撤', u'最小手数', u'测试倍数']]
+        # print self.__signal_info
         self.__signal_info = self.__signal_info.round(decimals={
             u'标准差': 4,
             u'预期回报': 4,
