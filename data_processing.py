@@ -10,9 +10,9 @@ if __name__ == '__main__':
     start_time = datetime.now()
     print "begin to predict ........."
 
-    balance = 5813.88
-    cpu_num = 2
-    desired_signals = [u'DM8034']
+    balance = 10000
+    cpu_num = 25
+    desired_signals = [u'DM8034', u'DM0066']
 
     cook = Cook()
     cook.collectPotato(path.abspath("inputs/relations.xlsx"))
