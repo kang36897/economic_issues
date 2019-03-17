@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool, Manager, Lock
 
 from Chef import Chef
 import pandas as pd
 from os import path
+from copy import copy
+
+
 
 def filter(row):
     """
@@ -16,8 +19,10 @@ def filter(row):
 
     return True
 
+
 def wrapper(chef, st):
     return chef.handleOrder(st)
+
 
 class Restaurant:
 
@@ -29,8 +34,29 @@ class Restaurant:
 
         self.queue = self.m.Queue()
         self.balance = balance
+        self.task_lock = Lock()
 
-    def serveCustomer(self, desired_signals, delivery_path = None, ):
+    def getTaskLock(self):
+        return self.task_lock
+
+    def compensate(self, df, desired_signals, full_signals):
+        shared_columns = []
+
+        for item in df.columns:
+            if item not in desired_signals:
+                shared_columns.append(item)
+
+        for item in full_signals:
+            if item not in desired_signals:
+                df[item] = 0
+
+        ideal_columns = copy(full_signals)
+        ideal_columns.extend(shared_columns)
+
+        return df[ideal_columns]
+
+
+    def serveCustomer(self, desired_signals, delivery_path=None, ):
         taskSequence = self.servant.receiveOrders(desired_signals)
 
         for st in taskSequence:
@@ -43,14 +69,16 @@ class Restaurant:
             if len(async_result_set) < self.cpu_num:
                 st = self.queue.get()
                 chef = Chef(self.queue,
-                                         names_of_signals=desired_signals,
-                                         standard_deviation_of_signals= self.servant.getStandardDeviationOfSignals(),
-                                         expected_return_of_signals = self.servant.getExpectedReturnOfSignals(),
-                                         net_withdrawal_of_signals = self.servant.getNetWithdrawalOfSignals(),
-                                         relation = self.servant.getRelationOfSignal(),
-                                         balance = self.balance
-                                         )
-
+                            names_of_signals=desired_signals,
+                            standard_deviation_of_signals=self.servant.getStandardDeviationOfSignals(),
+                            expected_return_of_signals=self.servant.getExpectedReturnOfSignals(),
+                            net_withdrawal_of_signals=self.servant.getNetWithdrawalOfSignals(),
+                            relation=self.servant.getRelationOfSignal(),
+                            balance=self.balance
+                            )
+                chef.setColumnsInRedefinedOrder(
+                    [u'balance', u'corelation', u'times', u'drawback', u'drawback%', u'exp_profit', u'exp_profit%',
+                     u'sharp%', u'pl%'])
                 temp = self.p.apply_async(wrapper, (chef, st))
                 async_result_set.append(temp)
 
@@ -72,7 +100,8 @@ class Restaurant:
 
         final_df = pd.concat(dishesAfterAddressing, ignore_index=True)
 
+        final_df = self.compensate(final_df, desired_signals, self.servant.getInvolvedSignals())
         if delivery_path is not None:
-            final_df.to_csv(path.join(delivery_path, "{}.csv".format("+".join(desired_signals))), encoding="utf-8", float_format="%.2f")
-
+            final_df.to_csv(path.join(delivery_path, "{}.csv".format("+".join(desired_signals))), encoding="utf-8",
+                            float_format="%.2f")
         return final_df

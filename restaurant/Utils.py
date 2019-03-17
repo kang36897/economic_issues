@@ -9,3 +9,4 @@ def compareListIgnoreOrder(left, right):
             return False
 
     return True
+
