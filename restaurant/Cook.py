@@ -139,7 +139,7 @@ class Cook:
         max = 0
         result = None
         for key, value in possible_times.items():
-            if value > max and key in desired_signals:
+            if value >= max and key in desired_signals:
                 result = (key, value)
                 max = value
         else:
@@ -177,3 +177,10 @@ class Cook:
     def loadPlate(self, dish, plate):
         filtered_df = dish.loc[dish.apply(plate, axis=1), :]
         return filtered_df
+
+    def sortInvolvedSignals(self):
+        if self.involvedSignals is None:
+            return self.involvedSignals
+
+        self.involvedSignals.sort()
+        return self.involvedSignals

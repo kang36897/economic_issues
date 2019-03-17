@@ -78,6 +78,14 @@ class CookTest(unittest.TestCase):
 
         self.assertEqual(len(expected), len(hm.getInvolvedSignals()))
 
+    def test_getInvolvedSignalsInOrder_after_collectTomato(self):
+        expected = [u'CJM622',u'CJM815', u'CJM995', u'DEMOZ', u'DM0066', u'DM8034', u'LYP', u'USG']
+
+        hm = Cook()
+        hm.collectTomato(path.abspath("resources/signals.xlsx"))
+
+        self.assertItemsEqual(expected, hm.sortInvolvedSignals())
+
     def test_getAvailableSignals(self):
 
         hm = Cook()

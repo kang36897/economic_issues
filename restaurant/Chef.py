@@ -2,7 +2,9 @@
 
 import pandas as pd
 import math
-from datetime import  datetime
+from datetime import datetime
+from copy import copy
+
 
 def calculate_covariance(row, names_of_signals, standard_deviation_of_signals, relationship):
     temp_products = {}
@@ -22,6 +24,7 @@ def calculate_covariance(row, names_of_signals, standard_deviation_of_signals, r
             total += temp_products[left] * temp_products[right] * 2 * relationship[(left, right)]
     return math.sqrt(total)
 
+
 def calculate_return(row, names_of_signals, expected_return_of_signals):
     total = 0
 
@@ -30,35 +33,40 @@ def calculate_return(row, names_of_signals, expected_return_of_signals):
 
     return total
 
+
 def calculate_multiple(row):
     if row["corelation"] == 0:
         return 0
 
     return row["balance"] / row["corelation"]
 
+
 def calculate_sharp_rate(row):
     if row["corelation"] == 0:
         return 0
-    return (row["exp_return"] * 12 - row["balance"] * 0.05) / row["corelation"]
+    return (row["exp_profit"] * 12 - row["balance"] * 0.05) / row["corelation"]
 
 
 class Chef:
     def __init__(self, queue,
-                 names_of_signals = None,
-                 standard_deviation_of_signals = None,
-                 expected_return_of_signals = None,
-                 net_withdrawal_of_signals = None,
-                 relation = None,
-                 balance = None):
+                 names_of_signals=None,
+                 standard_deviation_of_signals=None,
+                 expected_return_of_signals=None,
+                 net_withdrawal_of_signals=None,
+                 relation=None,
+                 balance=None):
         self.__queue = queue
         self.__base_dish = None
 
         self.desiredFavor = names_of_signals
-        self.standardDeviationOfSignals =standard_deviation_of_signals
+        self.standardDeviationOfSignals = standard_deviation_of_signals
         self.garlic = net_withdrawal_of_signals
         self.ginger = expected_return_of_signals
         self.salt = relation
         self.meat = balance
+
+        self.columnsInRedefinedOrder = None
+        self.columnMapper = None
         pass
 
     def sliceTomato(self, st):
@@ -72,38 +80,71 @@ class Chef:
         # print self.__base_dish
         return df
 
-
     def stir(self):
         self.__base_dish['balance'] = self.meat
         self.__base_dish["corelation"] = self.__base_dish.apply(calculate_covariance, axis=1,
-                                                  args=(
-                                                  self.desiredFavor, self.standardDeviationOfSignals, self.salt))
+                                                                args=(
+                                                                    self.desiredFavor, self.standardDeviationOfSignals,
+                                                                    self.salt))
         self.__base_dish["drawback"] = self.__base_dish.apply(calculate_covariance, axis=1,
-                                                args=(self.desiredFavor, self.garlic, self.salt))
+                                                              args=(self.desiredFavor, self.garlic, self.salt))
+        self.__base_dish["exp_profit"] = self.__base_dish.apply(calculate_return, axis=1,
+                                                                args=(self.desiredFavor, self.ginger))
 
-        self.__base_dish["exp_return"] = self.__base_dish.apply(calculate_return, axis=1,
-                                                  args=(self.desiredFavor, self.ginger))
-        self.__base_dish['times'] = self.__base_dish.apply(calculate_multiple, axis=1)
+        self.__base_dish['times'] = self.__base_dish.apply(
+            lambda row: 0 if row["corelation"] == 0 else (row["balance"] / row["corelation"]), axis=1)
 
-        self.__base_dish["drawback_ratio"] = self.__base_dish["drawback"] * 100 / self.__base_dish["balance"]
-        self.__base_dish["exp_return_ratio"] = self.__base_dish["exp_return"] * 100 / self.__base_dish["balance"]
+        self.__base_dish["drawback%"] = self.__base_dish["drawback"] * 100 / self.__base_dish["balance"]
+        self.__base_dish["exp_profit%"] = self.__base_dish["exp_profit"] * 100 / self.__base_dish["balance"]
 
-        self.__base_dish = self.__base_dish.round({"drawback_ratio": 2, "exp_return_ratio": 2})
+        self.__base_dish = self.__base_dish.round({"drawback%": 2, "exp_profit%": 2})
 
-        self.__base_dish["sharp_ratio"] = self.__base_dish.apply(calculate_sharp_rate, axis=1)
+        self.__base_dish["sharp%"] = self.__base_dish.apply(lambda row: 0 if row["corelation"] == 0 else (
+                (row["exp_profit"] * 12 - row["balance"] * 0.05) / row["corelation"]), axis=1)
+        self.__base_dish['pl%'] = self.__base_dish.apply(
+            lambda row: 0 if row['drawback'] == 0 else (row['exp_profit'] * 100 / row['drawback']), axis=1)
+
         return self.__base_dish
 
-    def doSpecialDish(self,st):
+    def redefineColumns(self, columns_in_order, mapper=None):
+        if self.__base_dish is None:
+            return
+
+        if mapper is not None:
+            self.__base_dish.rename(mapper=mapper, axis="columns", inplace=True)
+
+        if columns_in_order is not None:
+            self.__base_dish = self.__base_dish[columns_in_order]
+
+        return self.__base_dish
+
+    def doSpecialDish(self, st):
         start_time = datetime.now()
         self.sliceTomato(st)
         self.stir()
-
+        self.redefineColumns(self.columnsInRedefinedOrder, mapper=self.columnMapper)
         time_elapsed = datetime.now() - start_time
         print 'doSpecialDish()-> Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed)
         print st.reportProgress()
         pass
 
-
-    def handleOrder(self,st):
+    def handleOrder(self, st):
         self.doSpecialDish(st)
         return self.__base_dish
+
+    def setColumnsInRedefinedOrder(self, shared_columns_in_order):
+        if shared_columns_in_order is None:
+            return
+
+        self.columnsInRedefinedOrder = copy(self.desiredFavor)
+        self.columnsInRedefinedOrder.extend(shared_columns_in_order)
+        pass
+
+    def getColumnsInRedefinedOrder(self):
+        return self.columnsInRedefinedOrder
+
+    def getColumnMapper(self):
+        return self.columnMapper
+
+    def setColumnMapper(self, mapper):
+        self.columnMapper = mapper
