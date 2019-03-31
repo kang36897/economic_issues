@@ -10,7 +10,8 @@ def calculate_covariance(row, names_of_signals, references_of_signals, standard_
     temp_products = {}
     total = 0
     for s in names_of_signals:
-        p = (row[s] * 1.0 / references_of_signals[s]) * standard_deviation_of_signals[s]
+        # print 's:{} -> row[s]:{} -> references_of_signals[s]:{}'.format(s, row[s], references_of_signals[s])
+        p = (row[s] / references_of_signals[s]) * standard_deviation_of_signals[s]
 
         temp_products[s] = p
         total += pow(p, 2)

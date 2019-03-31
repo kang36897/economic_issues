@@ -6,7 +6,7 @@ from restaurant.Cook import Cook
 from restaurant.Chain import Chain
 
 from restaurant.DataSaver import CSVSaver, DBSaver
-from restaurant.Restaurant import Restaurant
+from restaurant.Filter import  Filter
 
 if __name__ == '__main__':
     start_time = datetime.now()
@@ -31,10 +31,11 @@ if __name__ == '__main__':
     # db_saver = DBSaver('financial_predict',  'mysql+mysqlconnector://[user]:[pass]@[host]:[port]/[schema]', schema='investment')
     db_saver = DBSaver('financial_predict', 'mysql+mysqlconnector://investor:admin@127.0.0.1:3306/investment',
                        schema='investment')
-    savers = [csv_saver, db_saver]
+    savers = [csv_saver]
 
+    filter = Filter()
     chain = Chain(cook,cpu_num, balance)
-    chain.doBusiness(target_signals, savers)
+    chain.doBusiness(target_signals, savers, filter)
 
     time_elapsed = datetime.now() - start_time
     print "Prediction is completed ........."

@@ -108,7 +108,15 @@ class Cook:
         for item in self.involvedSignals:
             self.possibleTimes[item] = self.__signal_info.loc[item, u'最小手数'] * self.__signal_info.loc[
                 item, u'测试倍数']
+
             self.referencesOfSignals[item] = self.__signal_info.loc[item, u'最小手数']
+
+
+    def checkReferencesIsAboveZero(self, target_signals):
+        for item in target_signals:
+            if self.referencesOfSignals[item] <= 0:
+                raise Exception("signal:{} -> 最小手数 <= 0".format(item))
+
 
     def getStandardDeviationOfSignals(self):
         return self.standardDeviationOfSignals
@@ -178,7 +186,7 @@ class Cook:
 
 
     def loadPlate(self, dish, plate):
-        filtered_df = dish.loc[dish.apply(plate, axis=1), :]
+        filtered_df = dish.loc[dish.apply(plate.filter, axis=1), :]
         return filtered_df
 
     def sortInvolvedSignals(self):

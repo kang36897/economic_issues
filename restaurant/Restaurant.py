@@ -7,19 +7,6 @@ from os import path
 from copy import copy
 
 
-
-def filter(row):
-    """
-    the function used to filter the result DataFrame
-    :param row:
-    :return:
-    """
-    # if row["drawback_ratio"] > 30:
-    #     return False
-
-    return True
-
-
 def wrapper(chef, st):
     return chef.handleOrder(st)
 
@@ -35,6 +22,8 @@ class Restaurant:
         self.queue = self.m.Queue()
         self.balance = balance
         self.task_lock = Lock()
+
+        self.filter = None
 
     def getTaskLock(self):
         return self.task_lock
@@ -55,8 +44,7 @@ class Restaurant:
 
         return df[ideal_columns]
 
-
-    def serveCustomer(self, desired_signals, data_savers ):
+    def serveCustomer(self, desired_signals, data_savers):
         taskSequence = self.servant.receiveOrders(desired_signals)
 
         for st in taskSequence:
@@ -97,13 +85,16 @@ class Restaurant:
 
         result_set.extend([r.get() for r in async_result_set])
 
-        dishesAfterAddressing = [self.servant.loadPlate(dish, filter) for dish in result_set]
+        dishesAfterAddressing = [self.servant.loadPlate(dish, self.filter) for dish in result_set]
 
         final_df = pd.concat(dishesAfterAddressing, ignore_index=True)
 
         final_df = self.compensate(final_df, desired_signals, self.servant.getInvolvedSignals())
 
         for saver in data_savers:
-            saver.save(final_df, desired_signals= desired_signals)
+            saver.save(final_df, desired_signals=desired_signals)
 
         return final_df
+
+    def setFilter(self, filter):
+        self.filter = filter
