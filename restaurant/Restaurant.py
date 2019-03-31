@@ -56,7 +56,7 @@ class Restaurant:
         return df[ideal_columns]
 
 
-    def serveCustomer(self, desired_signals, delivery_path=None, ):
+    def serveCustomer(self, desired_signals, data_savers ):
         taskSequence = self.servant.receiveOrders(desired_signals)
 
         for st in taskSequence:
@@ -70,6 +70,7 @@ class Restaurant:
                 st = self.queue.get()
                 chef = Chef(self.queue,
                             names_of_signals=desired_signals,
+                            references_of_signals=self.servant.getReferencesOfSignals(),
                             standard_deviation_of_signals=self.servant.getStandardDeviationOfSignals(),
                             expected_return_of_signals=self.servant.getExpectedReturnOfSignals(),
                             net_withdrawal_of_signals=self.servant.getNetWithdrawalOfSignals(),
@@ -101,7 +102,8 @@ class Restaurant:
         final_df = pd.concat(dishesAfterAddressing, ignore_index=True)
 
         final_df = self.compensate(final_df, desired_signals, self.servant.getInvolvedSignals())
-        if delivery_path is not None:
-            final_df.to_csv(path.join(delivery_path, "{}.csv".format("+".join(desired_signals))), encoding="utf-8",
-                            float_format="%.2f")
+
+        for saver in data_savers:
+            saver.save(final_df, desired_signals= desired_signals)
+
         return final_df

@@ -23,7 +23,7 @@ class Cook:
         self.expectedReturnOfSignals = None
         self.netWithdrawalOfSignals = None
         self.possibleTimes = None
-
+        self.referencesOfSignals = None
     def getSignalsInRelation(self):
         return self.signalsInRelation
 
@@ -103,9 +103,12 @@ class Cook:
             self.netWithdrawalOfSignals[item] = self.__signal_info.loc[item, u'净值回撤']
 
         self.possibleTimes = {}
+        self.referencesOfSignals = {}
+
         for item in self.involvedSignals:
             self.possibleTimes[item] = self.__signal_info.loc[item, u'最小手数'] * self.__signal_info.loc[
                 item, u'测试倍数']
+            self.referencesOfSignals[item] = self.__signal_info.loc[item, u'最小手数']
 
     def getStandardDeviationOfSignals(self):
         return self.standardDeviationOfSignals
@@ -184,3 +187,6 @@ class Cook:
 
         self.involvedSignals.sort()
         return self.involvedSignals
+
+    def getReferencesOfSignals(self):
+        return self.referencesOfSignals

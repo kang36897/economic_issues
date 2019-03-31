@@ -6,11 +6,11 @@ from datetime import datetime
 from copy import copy
 
 
-def calculate_covariance(row, names_of_signals, standard_deviation_of_signals, relationship):
+def calculate_covariance(row, names_of_signals, references_of_signals, standard_deviation_of_signals, relationship):
     temp_products = {}
     total = 0
     for s in names_of_signals:
-        p = row[s] * standard_deviation_of_signals[s]
+        p = (row[s] * 1.0 / references_of_signals[s]) * standard_deviation_of_signals[s]
 
         temp_products[s] = p
         total += pow(p, 2)
@@ -50,6 +50,7 @@ def calculate_sharp_rate(row):
 class Chef:
     def __init__(self, queue,
                  names_of_signals=None,
+                 references_of_signals=None,
                  standard_deviation_of_signals=None,
                  expected_return_of_signals=None,
                  net_withdrawal_of_signals=None,
@@ -59,6 +60,7 @@ class Chef:
         self.__base_dish = None
 
         self.desiredFavor = names_of_signals
+        self.references_of_signals = references_of_signals
         self.standardDeviationOfSignals = standard_deviation_of_signals
         self.garlic = net_withdrawal_of_signals
         self.ginger = expected_return_of_signals
@@ -84,10 +86,12 @@ class Chef:
         self.__base_dish['balance'] = self.meat
         self.__base_dish["corelation"] = self.__base_dish.apply(calculate_covariance, axis=1,
                                                                 args=(
-                                                                    self.desiredFavor, self.standardDeviationOfSignals,
+                                                                    self.desiredFavor, self.references_of_signals,
+                                                                    self.standardDeviationOfSignals,
                                                                     self.salt))
         self.__base_dish["drawback"] = self.__base_dish.apply(calculate_covariance, axis=1,
-                                                              args=(self.desiredFavor, self.garlic, self.salt))
+                                                              args=(self.desiredFavor, self.references_of_signals,
+                                                                    self.garlic, self.salt))
         self.__base_dish["exp_profit"] = self.__base_dish.apply(calculate_return, axis=1,
                                                                 args=(self.desiredFavor, self.ginger))
 
