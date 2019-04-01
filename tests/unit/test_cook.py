@@ -86,6 +86,25 @@ class CookTest(unittest.TestCase):
 
         self.assertItemsEqual(expected, hm.sortInvolvedSignals())
 
+    def test_getReferencesOfSignals_after_collectTomato(self):
+        expected = {
+            'LYP': np.float64(0.1),
+            'CJM622': np.float64(0.1),
+            'DEMOZ': np.float64(0.1),
+            'CJM815': np.float64(0.63),
+            'CJM995': np.float64(1),
+            'DM0066': np.float64(0.5),
+            'USG': np.float64(0.02),
+            'DM8034': np.float64(0.05)
+        }
+
+        hm = Cook()
+        hm.collectTomato(path.abspath("resources/signals.xlsx"))
+
+        for key, value in expected.items():
+            self.assertEqual(expected[key], hm.getReferencesOfSignals()[key])
+
+
     def test_getAvailableSignals(self):
 
         hm = Cook()

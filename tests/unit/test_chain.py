@@ -16,7 +16,7 @@ class ChainTest(TestCase):
             ['a', 'b', 'c']
         ]
 
-        chain = Chain()
+        chain = Chain(None, 0, 100)
         result = chain.iteratePossiblePackage(input)
         print result
 

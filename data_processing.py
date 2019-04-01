@@ -5,7 +5,8 @@ from os import path
 from restaurant.Cook import Cook
 from restaurant.Chain import Chain
 
-from restaurant.Restaurant import Restaurant
+from restaurant.DataSaver import CSVSaver, DBSaver
+from restaurant.Filter import  Filter
 
 if __name__ == '__main__':
     start_time = datetime.now()
@@ -21,8 +22,20 @@ if __name__ == '__main__':
     cook.collectTomato(path.abspath("inputs/signals.xlsx"))
     cook.sortInvolvedSignals()
 
+
+    csv_saver = CSVSaver(path.abspath("outputs"))
+
+    # 1.create a database called 'investment'
+    # 2.replace the parameters in brackets with your real arguments, such as your mysql database user name, password
+    # 2.1 host -> 127.0.0.1, default port is 3306
+    # db_saver = DBSaver('financial_predict',  'mysql+mysqlconnector://[user]:[pass]@[host]:[port]/[schema]', schema='investment')
+    db_saver = DBSaver('financial_predict', 'mysql+mysqlconnector://investor:admin@127.0.0.1:3306/investment',
+                       schema='investment')
+    savers = [csv_saver]
+
+    filter = Filter()
     chain = Chain(cook,cpu_num, balance)
-    chain.doBusiness(target_signals, path.abspath("outputs"))
+    chain.doBusiness(target_signals, savers, filter)
 
     time_elapsed = datetime.now() - start_time
     print "Prediction is completed ........."

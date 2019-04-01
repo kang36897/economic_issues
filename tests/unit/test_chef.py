@@ -69,19 +69,21 @@ class ChefTest(unittest.TestCase):
         names_of_signals = ['a', 'b']
         standard_deviation_of_signals = {'a': 0.3, 'b' : 0.7}
         relationship = {('a', 'a'): 1, ('b', 'b'):1, ('a', 'b'): 0.5, ('b', 'a'): 0.5}
+        references_of_signals = {'a': 0.1, 'b': 0.1}
 
-        expected = math.sqrt(math.pow(0.1 * 0.3, 2) + math.pow(0.2 * 0.7, 2) + 2 * (0.1 * 0.3) * (0.2 * 0.7) * 0.5)
-        self.assertEqual(expected,calculate_covariance(row, names_of_signals, standard_deviation_of_signals, relationship))
+        expected = math.sqrt(math.pow((0.1 / 0.1) * 0.3, 2) + math.pow((0.2 / 0.1) * 0.7, 2) + 2 * (0.1 / 0.1) * 0.3 * (0.2 / 0.1) * 0.7 * 0.5)
+        self.assertEqual(expected,calculate_covariance(row,  names_of_signals, references_of_signals, standard_deviation_of_signals, relationship))
 
     def test_calculate_covariance_1(self):
         row = {"a": 0.1, "b": 0.2}
         names_of_signals = ['a']
         standard_deviation_of_signals = {'a': 0.3, 'b': 0.7}
         relationship = {('a', 'a'): 1, ('b', 'b'): 1, ('a', 'b'): 0.5, ('b', 'a'): 0.5}
+        references_of_signals = {'a': 0.01, 'b': 0.1}
 
-        expected = math.sqrt(math.pow(0.1 * 0.3, 2))
+        expected = math.sqrt(math.pow((0.1 / 0.01) * 0.3, 2))
         self.assertEqual(expected,
-                         calculate_covariance(row, names_of_signals, standard_deviation_of_signals, relationship))
+                         calculate_covariance(row, names_of_signals, references_of_signals, standard_deviation_of_signals, relationship))
 
     def test_calculate_covariance_3(self):
         row = {"a": 0.1, "b": 0.2, 'c': 0.3}
@@ -97,13 +99,14 @@ class ChefTest(unittest.TestCase):
                         ('b', 'c') : 0.3,
                         ('c', 'b') : 0.3
                          }
+        references_of_signals = {'a': 0.01, 'b': 0.1, 'c': 0.02}
 
-        expected = math.sqrt(math.pow(0.1 * 0.3, 2) + math.pow(0.2 * 0.7, 2) + math.pow(0.3 * 0.5, 2)
-                             + 2 * (0.1 * 0.3) * (0.2 * 0.7) * 0.5
-                             + 2 * (0.1 * 0.3) * (0.3 * 0.5) * 0.7
-                             + 2 * (0.2 * 0.7) * (0.3 * 0.5) * 0.3)
+        expected = math.sqrt(math.pow((0.1 / 0.01) * 0.3, 2) + math.pow((0.2 / 0.1) * 0.7, 2) + math.pow((0.3 / 0.02) * 0.5, 2)
+                             + 2 * ((0.1 / 0.01) * 0.3) * ((0.2 / 0.1) * 0.7) * 0.5
+                             + 2 * ((0.1 / 0.01) * 0.3) * ((0.3 / 0.02) * 0.5) * 0.7
+                             + 2 * ((0.2 / 0.1) * 0.7) * ((0.3 / 0.02) * 0.5) * 0.3)
         self.assertEqual(expected,
-                         calculate_covariance(row, names_of_signals, standard_deviation_of_signals, relationship))
+                         calculate_covariance(row, names_of_signals, references_of_signals, standard_deviation_of_signals, relationship))
 
     def test_calculate_return(self):
         names_of_signals = ['a', 'b']
@@ -143,6 +146,7 @@ class ChefTest(unittest.TestCase):
                         ('c', 'b'): 0.3
                         }
 
+        references_of_signals = {'a': 0.01, 'b': 0.1, 'c': 0.02}
 
 
         expected_df = pd.DataFrame(data = [[0.1, 0.2]], columns=['a', 'b'])
@@ -150,12 +154,12 @@ class ChefTest(unittest.TestCase):
 
         expected_df["corelation"] = expected_df.apply(calculate_covariance, axis=1,
                                                   args=(
-                                                  names_of_signals, standard_deviation_of_signals, relationship))
+                                                  names_of_signals, references_of_signals, standard_deviation_of_signals, relationship))
 
 
         expected_df["drawback"] = expected_df.apply(calculate_covariance, axis=1,
                                                       args=(
-                                                          names_of_signals, net_withdrawal_of_signals,
+                                                          names_of_signals, references_of_signals, net_withdrawal_of_signals,
                                                           relationship))
         expected_df["exp_profit"] = expected_df.apply(calculate_return, axis=1,
                                                                 args=(names_of_signals, expected_return_of_signals))
@@ -180,6 +184,7 @@ class ChefTest(unittest.TestCase):
 
         chef = Chef(queue,
                     names_of_signals= names_of_signals,
+                    references_of_signals=references_of_signals,
                     standard_deviation_of_signals = standard_deviation_of_signals,
                     expected_return_of_signals = expected_return_of_signals,
                     net_withdrawal_of_signals = net_withdrawal_of_signals,
@@ -205,18 +210,21 @@ class ChefTest(unittest.TestCase):
                         ('b', 'c'): 0.3,
                         ('c', 'b'): 0.3
                         }
+        references_of_signals = {'a': 0.01, 'b': 0.1, 'c': 0.02}
 
         expected_df = pd.DataFrame(data=[[0.1, 0.2]], columns=['a', 'b'])
         expected_df["balance"] = 120
 
         expected_df["corelation"] = expected_df.apply(calculate_covariance, axis=1,
                                                       args=(
-                                                          names_of_signals, standard_deviation_of_signals,
+                                                          names_of_signals, references_of_signals,
+                                                          standard_deviation_of_signals,
                                                           relationship))
 
         expected_df["drawback"] = expected_df.apply(calculate_covariance, axis=1,
                                                     args=(
-                                                        names_of_signals, net_withdrawal_of_signals,
+                                                        names_of_signals, references_of_signals,
+                                                        net_withdrawal_of_signals,
                                                         relationship))
         expected_df["exp_profit"] = expected_df.apply(calculate_return, axis=1,
                                                       args=(names_of_signals, expected_return_of_signals))
@@ -248,6 +256,7 @@ class ChefTest(unittest.TestCase):
 
         chef = Chef(queue,
                     names_of_signals=names_of_signals,
+                    references_of_signals=references_of_signals,
                     standard_deviation_of_signals=standard_deviation_of_signals,
                     expected_return_of_signals=expected_return_of_signals,
                     net_withdrawal_of_signals=net_withdrawal_of_signals,
@@ -331,18 +340,19 @@ class ChefTest(unittest.TestCase):
                         ('b', 'c'): 0.3,
                         ('c', 'b'): 0.3
                         }
+        references_of_signals = {'a': 0.01, 'b': 0.1, 'c': 0.02}
 
         expected_df = pd.DataFrame(data=[[0.1, 0.2]], columns=['a', 'b'])
         expected_df["balance"] = 120
 
         expected_df["corelation"] = expected_df.apply(calculate_covariance, axis=1,
                                                       args=(
-                                                          names_of_signals, standard_deviation_of_signals,
+                                                          names_of_signals, references_of_signals, standard_deviation_of_signals,
                                                           relationship))
 
         expected_df["drawback"] = expected_df.apply(calculate_covariance, axis=1,
                                                     args=(
-                                                        names_of_signals, net_withdrawal_of_signals,
+                                                        names_of_signals, references_of_signals, net_withdrawal_of_signals,
                                                         relationship))
         expected_df["exp_profit"] = expected_df.apply(calculate_return, axis=1,
                                                       args=(names_of_signals, expected_return_of_signals))
@@ -364,6 +374,7 @@ class ChefTest(unittest.TestCase):
 
         chef = Chef(queue,
                     names_of_signals=names_of_signals,
+                    references_of_signals = references_of_signals,
                     standard_deviation_of_signals=standard_deviation_of_signals,
                     expected_return_of_signals=expected_return_of_signals,
                     net_withdrawal_of_signals=net_withdrawal_of_signals,
