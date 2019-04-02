@@ -10,17 +10,8 @@ from restaurant.SmallTask import SmallTask
 
 from restaurant.Utils import compareListIgnoreOrder
 from copy import copy
+from restaurant.Sieve import Sieve
 
-def filter(row):
-    """
-    the function used to filter the result DataFrame
-    :param row:
-    :return:
-    """
-    # if row["drawback_ratio"] > 30:
-    #     return False
-
-    return True
 
 class ChefTest(unittest.TestCase):
 
@@ -382,7 +373,8 @@ class ChefTest(unittest.TestCase):
 
         dish = chef.handleOrder(st)
         c = Cook()
-        self.assertTrue(expected_df.equals(c.loadPlate(dish, filter)))
+        sieve = Sieve()
+        self.assertTrue(expected_df.equals(c.loadPlate(dish, sieve.filter)))
         self.assertFalse(expected_df.equals(c.loadPlate(dish, lambda row: row["drawback%"] > 30)))
 
 

@@ -6,13 +6,13 @@ from restaurant.Cook import Cook
 from restaurant.Chain import Chain
 
 from restaurant.DataSaver import CSVSaver, DBSaver
-from restaurant.Filter import  Filter
+from restaurant.Sieve import  Sieve
 
 if __name__ == '__main__':
     start_time = datetime.now()
     print "begin to predict ........."
 
-    target_signals = [u'DM8034', u'DM0066',u'CJM729']
+    target_signals = [u'DM8034', u'DM0066', u'LYP']
 
     balance = 10000
     cpu_num = 5
@@ -33,7 +33,7 @@ if __name__ == '__main__':
                        schema='investment')
     savers = [csv_saver]
 
-    filter = Filter()
+    filter = Sieve()
     chain = Chain(cook,cpu_num, balance)
     chain.doBusiness(target_signals, savers, filter)
 

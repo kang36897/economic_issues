@@ -19,6 +19,7 @@ class Chain:
 
     def doBusiness(self, target_signals, data_savers, filter):
         self.cook.checkReferencesIsAboveZero(target_signals)
+        self.cook.checkDesiredSignalsIsAvailable(target_signals)
 
         for item in self.iteratePossiblePackage(target_signals):
             restaurant = Restaurant(self.cpu_num, self.cook, self.balance)
