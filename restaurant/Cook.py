@@ -117,6 +117,18 @@ class Cook:
             if self.referencesOfSignals[item] <= 0:
                 raise Exception("signal:{} -> 最小手数 <= 0".format(item))
 
+    def checkDesiredSignalsIsAvailable(self, target_signals):
+        available_signals = self.getAvailableSignals()
+        if available_signals is None:
+            raise Exception("Available Signals is None, you need to call collectPotato() and collectTomato() firstly ")
+
+        for item in target_signals:
+            if item not in available_signals:
+                raise Exception("singal:{} is not an available signal,"
+                                " it means that {} is neither in singals table nor relations table".format(item, item))
+
+
+
 
     def getStandardDeviationOfSignals(self):
         return self.standardDeviationOfSignals
@@ -185,8 +197,8 @@ class Cook:
         return dishes
 
 
-    def loadPlate(self, dish, plate):
-        filtered_df = dish.loc[dish.apply(plate.filter, axis=1), :]
+    def loadPlate(self, dish, filter):
+        filtered_df = dish.loc[dish.apply(filter, axis=1), :]
         return filtered_df
 
     def sortInvolvedSignals(self):

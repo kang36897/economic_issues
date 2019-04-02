@@ -23,7 +23,7 @@ class Restaurant:
         self.balance = balance
         self.task_lock = Lock()
 
-        self.filter = None
+        self.sieve = None
 
     def getTaskLock(self):
         return self.task_lock
@@ -85,7 +85,7 @@ class Restaurant:
 
         result_set.extend([r.get() for r in async_result_set])
 
-        dishesAfterAddressing = [self.servant.loadPlate(dish, self.filter) for dish in result_set]
+        dishesAfterAddressing = [self.servant.loadPlate(dish, self.sieve.filter) for dish in result_set]
 
         final_df = pd.concat(dishesAfterAddressing, ignore_index=True)
 
@@ -97,4 +97,4 @@ class Restaurant:
         return final_df
 
     def setFilter(self, filter):
-        self.filter = filter
+        self.sieve = filter

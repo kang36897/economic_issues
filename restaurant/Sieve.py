@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-class Filter:
+class Sieve:
 
     def __init__(self, drawback_ratio=None, exp_return_ratio=None, sharp_ratio=None, pl_ratio=None):
         self.drawback_ratio = drawback_ratio
