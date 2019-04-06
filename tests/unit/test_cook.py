@@ -256,8 +256,5 @@ class CookTest(unittest.TestCase):
                 [[largest[i]], [np.float64(0.0), np.float64(0.01)],[np.float64(0.0), np.float64(0.01), np.float64(0.02)]], start=0),
                             result[i] )
 
-
-
-
 if __name__ == '__main__':
     unittest.main()
