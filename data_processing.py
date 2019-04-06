@@ -7,9 +7,9 @@ from restaurant.Chain import Chain
 
 from restaurant.DataSaver import CSVSaver, DBSaver
 from restaurant.Sieve import Sieve
+from sqlalchemy.types import Float, Integer
 
 import json
-
 
 def keep_material_in_place(input_files):
     for item in input_files:
@@ -34,7 +34,6 @@ if __name__ == '__main__':
     input_directory = path.abspath("inputs")
     config_data = load_config(config_file)
 
-
     cook = Cook()
     cook.collectPotato(path.join(input_directory, config_data["relation_file"]))
     cook.collectTomato(path.join(input_directory, config_data["signal_file"]))
@@ -47,12 +46,27 @@ if __name__ == '__main__':
     # 2.1 host -> 127.0.0.1, default port is 3306
     # db_saver = DBSaver('financial_predict',  'mysql+mysqlconnector://[user]:[pass]@[host]:[port]/[schema]', schema='investment')
     mysql_config = config_data["mysql"]
+    column_type = {
+        'balance': Integer(),
+        'corelation': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+        'times': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+        'drawback': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+        'exp_profit': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+        'drawback%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+        'exp_profit%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+        'sharp%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+        'pl%': Float(precision=2, asdecimal=True, decimal_return_scale=2)
+    }
+    for item in cook.getInvolvedSignals():
+        column_type[item] = Float(precision=2, asdecimal=True, decimal_return_scale=2)
+
     db_saver = DBSaver(mysql_config['table_name'],
-                       'mysql+mysqlconnector://{}:{}@{}:{}/{}'.format(mysql_config['user'],mysql_config['pass'],
+                       'mysql+mysqlconnector://{}:{}@{}:{}/{}'.format(mysql_config['user'], mysql_config['pass'],
                                                                       mysql_config['host'], mysql_config['port'],
                                                                       mysql_config['schema']),
-                       schema=mysql_config['schema'])
-
+                       schema=mysql_config['schema'],
+                       column_dtype=column_type
+                       )
 
     savers = [csv_saver]
 

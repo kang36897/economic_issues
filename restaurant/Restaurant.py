@@ -37,7 +37,7 @@ class Restaurant:
 
         for item in full_signals:
             if item not in desired_signals:
-                df[item] = 0
+                df[item] = 0.0
 
         ideal_columns = copy(full_signals)
         ideal_columns.extend(shared_columns)
