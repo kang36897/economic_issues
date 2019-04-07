@@ -21,7 +21,7 @@ class Chain:
         self.cook.checkReferencesIsAboveZero(target_signals)
         self.cook.checkDesiredSignalsIsAvailable(target_signals)
 
-        for item in self.iteratePossiblePackage(target_signals):
-            restaurant = Restaurant(self.cpu_num, self.cook, self.balance)
-            restaurant.setFilter(filter)
-            restaurant.serveCustomer(item, data_savers)
+        # for item in self.iteratePossiblePackage(target_signals):
+        restaurant = Restaurant(self.cpu_num, self.cook, self.balance)
+        restaurant.setFilter(filter)
+        restaurant.serveCustomer(target_signals, data_savers)
