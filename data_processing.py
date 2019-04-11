@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
+import json
 from datetime import datetime
 from os import path
 
-from restaurant.Cook import Cook
-from restaurant.Chain import Chain
-
-from restaurant.DataSaver import CSVSaver, DBSaver
-from restaurant.Sieve import Sieve
 from sqlalchemy.types import Float, Integer
 
-import json
+from restaurant.Chain import Chain
+from restaurant.Cook import Cook
+from restaurant.DataSaver import CSVSaver, DBSaver
+from restaurant.Sieve import Sieve
+
 
 def keep_material_in_place(input_files):
     for item in input_files:
@@ -70,9 +70,21 @@ if __name__ == '__main__':
 
     savers = [csv_saver]
 
-    filter = Sieve()
+    sieve = None
+    if 'filter' in config_data:
+        drawback_ratio = None if 'drawback_ratio' not in config_data['filter'] else config_data['filter'][
+            'drawback_ratio']
+        exp_return_ratio = None if 'exp_return_ratio' not in config_data['filter'] else config_data['filter'][
+            'exp_return_ratio']
+        sharp_ratio = None if 'sharp_ratio' not in config_data['filter'] else config_data['filter']['sharp_ratio']
+        pl_ratio = None if 'pl_ratio' not in config_data['filter'] else config_data['filter']['pl_ratio']
+        sieve = Sieve(drawback_ratio=drawback_ratio, exp_return_ratio=exp_return_ratio,
+                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio)
+    else:
+        sieve = Sieve()
+
     chain = Chain(cook, config_data['cpu_num'], config_data['balance'])
-    chain.doBusiness(config_data['target_signals'], savers, filter)
+    chain.doBusiness(config_data['target_signals'], savers, sieve)
 
     time_elapsed = datetime.now() - start_time
     print "Prediction is completed ........."
