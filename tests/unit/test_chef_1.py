@@ -59,9 +59,10 @@ class ChefTest1(unittest.TestCase):
         names_of_signals = ['a', 'b']
         row = {"a": 0.1, "b": 0.2, 'c': 0.3}
         expected_return_of_signals = {'a': 0.21, 'b': 0.33, 'c': 0.47}
+        references_of_signals = {'a': 0.01, 'b': 0.1, 'c': 0.02}
 
-        expected = 0.1 * 0.21 + 0.2 * 0.33
-        self.assertEqual(expected, calculate_return(row, names_of_signals, expected_return_of_signals))
+        expected = 0.1 * 0.21 / 0.01 + 0.2 * 0.33 / 0.1
+        self.assertEqual(expected, calculate_return(row, names_of_signals, references_of_signals, expected_return_of_signals))
 
     def test_calculate_multiple(self):
         expect = {'balance': 100, 'corelation': 30}

@@ -47,7 +47,8 @@ class ChefTest3(TestCase):
                                                         self.names_of_signals, self.references_of_signals,
                                                         self.net_withdrawal_of_signals, self.relationship))
         expected_df["exp_profit"] = expected_df.apply(calculate_return, axis=1,
-                                                      args=(self.names_of_signals, self.expected_return_of_signals))
+                                                      args=(self.names_of_signals, self.references_of_signals,
+                                                            self.expected_return_of_signals))
 
         expected_df["times"] = expected_df.apply(calculate_multiple, axis=1)
 
@@ -123,9 +124,7 @@ class ChefTest3(TestCase):
         print df
         self.assertTrue(self.expected_df.equals(df))
 
-
     def test_loadPlate(self):
-
         st = SmallTask(0, ['a', 'b'], [[0.1], [0.2]], start=0, default_page_size=2)
         m = Manager()
         queue = m.Queue()
