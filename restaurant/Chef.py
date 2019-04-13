@@ -26,11 +26,12 @@ def calculate_covariance(row, names_of_signals, references_of_signals, standard_
     return math.sqrt(total)
 
 
-def calculate_return(row, names_of_signals, expected_return_of_signals):
+def calculate_return(row, names_of_signals, references_of_signals,  expected_return_of_signals):
     total = 0
 
     for s in names_of_signals:
-        total += row[s] * expected_return_of_signals[s]
+        if references_of_signals[s] != 0:
+            total += row[s] * expected_return_of_signals[s] / references_of_signals[s]
 
     return total
 
@@ -94,7 +95,8 @@ class Chef:
                                                               args=(self.desiredFavor, self.references_of_signals,
                                                                     self.garlic, self.salt))
         self.__base_dish["exp_profit"] = self.__base_dish.apply(calculate_return, axis=1,
-                                                                args=(self.desiredFavor, self.ginger))
+                                                                args=(self.desiredFavor, self.references_of_signals,
+                                                                      self.ginger))
 
         self.__base_dish['times'] = self.__base_dish.apply(
             lambda row: 0 if row["corelation"] == 0 else (row["balance"] / row["corelation"]), axis=1)
