@@ -18,16 +18,16 @@ class Sieve:
             return flag
 
         if self.drawback_ratio is not None:
-            flag = (row[u'drawback%'] < self.drawback_ratio) and flag
+            flag = (row[u'drawback%'] <= self.drawback_ratio) and flag
 
         if self.exp_return_ratio is not None:
-            flag = (row[u'exp_profit%'] > self.exp_return_ratio) and flag
+            flag = (row[u'exp_profit%'] >= self.exp_return_ratio) and flag
 
         if self.sharp_ratio is not None:
-            flag = (row[u'sharp%'] > self.sharp_ratio) and flag
+            flag = (row[u'sharp%'] >= self.sharp_ratio) and flag
 
         if self.pl_ratio is not None:
-            flag = (row[u'pl%'] > self.pl_ratio) and flag
+            flag = (row[u'pl%'] >= self.pl_ratio) and flag
 
         return flag
 
