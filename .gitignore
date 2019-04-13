@@ -4,3 +4,4 @@ inputs/*
 temps/*
 config/*
 restaurant/*.pyc
+*.pyc
