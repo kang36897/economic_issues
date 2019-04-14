@@ -37,7 +37,7 @@ class ChefTest3(TestCase):
         expected_df = pd.DataFrame(data=[[0.1, 0.2]], columns=self.names_of_signals)
         expected_df["balance"] = 120
 
-        expected_df["corelation"] = expected_df.apply(calculate_covariance, axis=1,
+        expected_df["covariance"] = expected_df.apply(calculate_covariance, axis=1,
                                                       args=(
                                                           self.names_of_signals, self.references_of_signals,
                                                           self.standard_deviation_of_signals, self.relationship))
@@ -47,7 +47,8 @@ class ChefTest3(TestCase):
                                                         self.names_of_signals, self.references_of_signals,
                                                         self.net_withdrawal_of_signals, self.relationship))
         expected_df["exp_profit"] = expected_df.apply(calculate_return, axis=1,
-                                                      args=(self.names_of_signals, self.expected_return_of_signals))
+                                                      args=(self.names_of_signals, self.references_of_signals,
+                                                            self.expected_return_of_signals))
 
         expected_df["times"] = expected_df.apply(calculate_multiple, axis=1)
 
@@ -57,13 +58,13 @@ class ChefTest3(TestCase):
         expected_df = expected_df.round({"drawback%": 2, "exp_profit%": 2})
         expected_df["sharp%"] = expected_df.apply(calculate_sharp_rate, axis=1)
 
-        expected_df['pl%'] = (expected_df['exp_profit'] / expected_df['drawback']) * 100
+        expected_df['pl%'] = (expected_df['exp_profit']  * 100 / expected_df['covariance'])
         print expected_df
         print expected_df.columns
         return expected_df
 
     def test_stir(self):
-        # u'balance',u'corelation',u'times', u'drawback', u'drawback%', u'exp_profit', u'exp_profit%',u'sharp%'
+        # u'balance',u'covariance',u'times', u'drawback', u'drawback%', u'exp_profit', u'exp_profit%',u'sharp%'
         st = SmallTask(0, ['a', 'b'], [[0.1], [0.2]], start=0, default_page_size=2)
         m = Manager()
         queue = m.Queue()
@@ -79,6 +80,10 @@ class ChefTest3(TestCase):
         df = chef.stir()
         print df
         print df.columns
+
+        for item in df.columns:
+            self.assertEquals(self.expected_df[item][0], df[item][0], 'not match {}'.format(item))
+
         self.assertTrue(self.expected_df.equals(df))
 
     def test_redefineColumns(self):
@@ -91,7 +96,7 @@ class ChefTest3(TestCase):
 
         newColumns = copy(self.names_of_signals)
         newColumns.extend(
-            [u'balance', u'corelation', u'times', u'drawback', u'drawback_ratio', u'exp_return', u'exp_return_ratio',
+            [u'balance', u'covariance', u'times', u'drawback', u'drawback_ratio', u'exp_return', u'exp_return_ratio',
              u"sharp_ratio"])
         self.expected_df = self.expected_df[newColumns]
 
@@ -123,9 +128,7 @@ class ChefTest3(TestCase):
         print df
         self.assertTrue(self.expected_df.equals(df))
 
-
     def test_loadPlate(self):
-
         st = SmallTask(0, ['a', 'b'], [[0.1], [0.2]], start=0, default_page_size=2)
         m = Manager()
         queue = m.Queue()
@@ -141,6 +144,7 @@ class ChefTest3(TestCase):
         dish = chef.handleOrder(st)
         c = Cook()
         sieve = Sieve()
+
         self.assertTrue(self.expected_df.equals(c.loadPlate(dish, sieve.filter)))
         self.assertFalse(self.expected_df.equals(c.loadPlate(dish, lambda row: row["drawback%"] > 30)))
 

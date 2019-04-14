@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import pandas as pd
 import math
-from datetime import datetime
 from copy import copy
+from datetime import datetime
+
+import pandas as pd
 
 
 def calculate_covariance(row, names_of_signals, references_of_signals, standard_deviation_of_signals, relationship):
@@ -26,7 +27,7 @@ def calculate_covariance(row, names_of_signals, references_of_signals, standard_
     return math.sqrt(total)
 
 
-def calculate_return(row, names_of_signals, references_of_signals,  expected_return_of_signals):
+def calculate_return(row, names_of_signals, references_of_signals, expected_return_of_signals):
     total = 0
 
     for s in names_of_signals:
@@ -37,16 +38,29 @@ def calculate_return(row, names_of_signals, references_of_signals,  expected_ret
 
 
 def calculate_multiple(row):
-    if row["corelation"] == 0:
+    if row["covariance"] == 0:
         return 0
 
-    return row["balance"] / row["corelation"]
+    return row["balance"] / row["covariance"]
 
 
 def calculate_sharp_rate(row):
-    if row["corelation"] == 0:
+    if row["covariance"] == 0:
         return 0
-    return (row["exp_profit"] * 12 - row["balance"] * 0.05) / row["corelation"]
+    return (row["exp_profit"] * 12 - row["balance"] * 0.05) / row["covariance"]
+
+
+def calculate_pl(row, names_of_signals, references_of_signals, standard_deviation_of_signals):
+    total = 0
+
+    for s in names_of_signals:
+        if references_of_signals[s] != 0:
+            total += row[s] * standard_deviation_of_signals[s] / references_of_signals[s]
+
+    if total == 0:
+        return 0
+    else:
+        return row['exp_profit'] * 100 / total
 
 
 class Chef:
@@ -86,7 +100,7 @@ class Chef:
 
     def stir(self):
         self.__base_dish['balance'] = self.meat
-        self.__base_dish["corelation"] = self.__base_dish.apply(calculate_covariance, axis=1,
+        self.__base_dish["covariance"] = self.__base_dish.apply(calculate_covariance, axis=1,
                                                                 args=(
                                                                     self.desiredFavor, self.references_of_signals,
                                                                     self.standardDeviationOfSignals,
@@ -99,17 +113,17 @@ class Chef:
                                                                       self.ginger))
 
         self.__base_dish['times'] = self.__base_dish.apply(
-            lambda row: 0 if row["corelation"] == 0 else (row["balance"] / row["corelation"]), axis=1)
+            lambda row: 0 if row["covariance"] == 0 else (row["balance"] / row["covariance"]), axis=1)
 
         self.__base_dish["drawback%"] = self.__base_dish["drawback"] * 100 / self.__base_dish["balance"]
         self.__base_dish["exp_profit%"] = self.__base_dish["exp_profit"] * 100 / self.__base_dish["balance"]
 
         self.__base_dish = self.__base_dish.round({"drawback%": 2, "exp_profit%": 2})
 
-        self.__base_dish["sharp%"] = self.__base_dish.apply(lambda row: 0 if row["corelation"] == 0 else (
-                (row["exp_profit"] * 12 - row["balance"] * 0.05) / row["corelation"]), axis=1)
+        self.__base_dish["sharp%"] = self.__base_dish.apply(lambda row: 0 if row["covariance"] == 0 else (
+                (row["exp_profit"] * 12 - row["balance"] * 0.05) / row["covariance"]), axis=1)
         self.__base_dish['pl%'] = self.__base_dish.apply(
-            lambda row: 0 if row['drawback'] == 0 else (row['exp_profit'] * 100 / row['drawback']), axis=1)
+            lambda row: 0 if row['covariance'] == 0 else (row['exp_profit'] * 100 / row['covariance']), axis=1)
 
         return self.__base_dish
 

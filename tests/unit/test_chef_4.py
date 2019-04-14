@@ -35,9 +35,9 @@ class ChefTest4(TestCase):
                     expected_return_of_signals=expected_return_of_signals,
                     net_withdrawal_of_signals=net_withdrawal_of_signals,
                     relation=relationship, balance=120)
-        chef.setColumnsInRedefinedOrder([u'balance', u'corelation', u'times', u'drawback', u'drawback%',
+        chef.setColumnsInRedefinedOrder([u'balance', u'covariance', u'times', u'drawback', u'drawback%',
                                          u'exp_profit', u'exp_profit%', u'sharp%'])
-        self.assertItemsEqual([u'a', u'b', u'balance', u'corelation', u'times', u'drawback', u'drawback%',
+        self.assertItemsEqual([u'a', u'b', u'balance', u'covariance', u'times', u'drawback', u'drawback%',
                                u'exp_profit', u'exp_profit%', u'sharp%'],
                               chef.getColumnsInRedefinedOrder())
 
