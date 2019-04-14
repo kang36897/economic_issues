@@ -66,7 +66,7 @@ class Restaurant:
                             balance=self.balance
                             )
                 chef.setColumnsInRedefinedOrder(
-                    [u'balance', u'corelation', u'times', u'drawback', u'drawback%', u'exp_profit', u'exp_profit%',
+                    [u'balance', u'covariance', u'times', u'drawback', u'drawback%', u'exp_profit', u'exp_profit%',
                      u'sharp%', u'pl%'])
                 temp = self.p.apply_async(wrapper, (chef, st))
                 async_result_set.append(temp)

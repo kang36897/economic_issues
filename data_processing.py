@@ -48,7 +48,7 @@ if __name__ == '__main__':
     mysql_config = config_data["mysql"]
     column_type = {
         'balance': Integer(),
-        'corelation': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+        'covariance': Float(precision=2, asdecimal=True, decimal_return_scale=2),
         'times': Float(precision=2, asdecimal=True, decimal_return_scale=2),
         'drawback': Float(precision=2, asdecimal=True, decimal_return_scale=2),
         'exp_profit': Float(precision=2, asdecimal=True, decimal_return_scale=2),

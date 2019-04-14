@@ -65,17 +65,17 @@ class ChefTest1(unittest.TestCase):
         self.assertEqual(expected, calculate_return(row, names_of_signals, references_of_signals, expected_return_of_signals))
 
     def test_calculate_multiple(self):
-        expect = {'balance': 100, 'corelation': 30}
+        expect = {'balance': 100, 'covariance': 30}
         self.assertEqual(100 / 30, calculate_multiple(expect))
 
-        expect2 = {'balance': 100, 'corelation': 0}
+        expect2 = {'balance': 100, 'covariance': 0}
         self.assertEqual(0, calculate_multiple(expect2))
 
-        expect2 = {'balance': 100, 'corelation': 12.0}
+        expect2 = {'balance': 100, 'covariance': 12.0}
         self.assertEqual(100 / 12.0, calculate_multiple(expect2))
 
     def test_calculate_sharp_rate(self):
-        expected = {"balance": 120, "corelation": 10.23, "exp_profit": 20.12}
+        expected = {"balance": 120, "covariance": 10.23, "exp_profit": 20.12}
         self.assertEqual((20.12 * 12 - 120 * 0.05) / 10.23, calculate_sharp_rate(expected))
 
 

@@ -37,7 +37,7 @@ class ChefTest3(TestCase):
         expected_df = pd.DataFrame(data=[[0.1, 0.2]], columns=self.names_of_signals)
         expected_df["balance"] = 120
 
-        expected_df["corelation"] = expected_df.apply(calculate_covariance, axis=1,
+        expected_df["covariance"] = expected_df.apply(calculate_covariance, axis=1,
                                                       args=(
                                                           self.names_of_signals, self.references_of_signals,
                                                           self.standard_deviation_of_signals, self.relationship))
@@ -64,7 +64,7 @@ class ChefTest3(TestCase):
         return expected_df
 
     def test_stir(self):
-        # u'balance',u'corelation',u'times', u'drawback', u'drawback%', u'exp_profit', u'exp_profit%',u'sharp%'
+        # u'balance',u'covariance',u'times', u'drawback', u'drawback%', u'exp_profit', u'exp_profit%',u'sharp%'
         st = SmallTask(0, ['a', 'b'], [[0.1], [0.2]], start=0, default_page_size=2)
         m = Manager()
         queue = m.Queue()
@@ -92,7 +92,7 @@ class ChefTest3(TestCase):
 
         newColumns = copy(self.names_of_signals)
         newColumns.extend(
-            [u'balance', u'corelation', u'times', u'drawback', u'drawback_ratio', u'exp_return', u'exp_return_ratio',
+            [u'balance', u'covariance', u'times', u'drawback', u'drawback_ratio', u'exp_return', u'exp_return_ratio',
              u"sharp_ratio"])
         self.expected_df = self.expected_df[newColumns]
 
