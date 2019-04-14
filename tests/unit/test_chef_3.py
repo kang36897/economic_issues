@@ -58,7 +58,7 @@ class ChefTest3(TestCase):
         expected_df = expected_df.round({"drawback%": 2, "exp_profit%": 2})
         expected_df["sharp%"] = expected_df.apply(calculate_sharp_rate, axis=1)
 
-        expected_df['pl%'] = (expected_df['exp_profit'] / expected_df['drawback']) * 100
+        expected_df['pl%'] = (expected_df['exp_profit']  * 100 / expected_df['covariance'])
         print expected_df
         print expected_df.columns
         return expected_df
@@ -80,6 +80,10 @@ class ChefTest3(TestCase):
         df = chef.stir()
         print df
         print df.columns
+
+        for item in df.columns:
+            self.assertEquals(self.expected_df[item][0], df[item][0], 'not match {}'.format(item))
+
         self.assertTrue(self.expected_df.equals(df))
 
     def test_redefineColumns(self):
@@ -140,6 +144,7 @@ class ChefTest3(TestCase):
         dish = chef.handleOrder(st)
         c = Cook()
         sieve = Sieve()
+
         self.assertTrue(self.expected_df.equals(c.loadPlate(dish, sieve.filter)))
         self.assertFalse(self.expected_df.equals(c.loadPlate(dish, lambda row: row["drawback%"] > 30)))
 

@@ -123,8 +123,7 @@ class Chef:
         self.__base_dish["sharp%"] = self.__base_dish.apply(lambda row: 0 if row["covariance"] == 0 else (
                 (row["exp_profit"] * 12 - row["balance"] * 0.05) / row["covariance"]), axis=1)
         self.__base_dish['pl%'] = self.__base_dish.apply(
-            calculate_pl, axis=1, args=(self.desiredFavor, self.references_of_signals,
-                                        self.standardDeviationOfSignals))
+            lambda row: 0 if row['covariance'] == 0 else (row['exp_profit'] * 100 / row['covariance']), axis=1)
 
         return self.__base_dish
 
