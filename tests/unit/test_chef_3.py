@@ -58,7 +58,7 @@ class ChefTest3(TestCase):
         expected_df = expected_df.round({"drawback%": 2, "exp_profit%": 2})
         expected_df["sharp%"] = expected_df.apply(calculate_sharp_rate, axis=1)
 
-        expected_df['pl%'] = (expected_df['exp_profit']  * 100 / expected_df['covariance'])
+        expected_df['pl%'] = (expected_df['exp_profit'] * 100 / expected_df['covariance'])
         print expected_df
         print expected_df.columns
         return expected_df
