@@ -1,0 +1,29 @@
+{
+  "name": "economic_issues",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kang36897/economic_issues.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kang36897/economic_issues/issues"
+  },
+  "homepage": "https://github.com/kang36897/economic_issues#readme",
+  "dependencies": {
+    "express": "4.16.4"
+  },
+  "devDependencies": {
+    "chai": "4.2.0",
+    "mocha": "6.1.3"
+  }
+}
