@@ -24,6 +24,7 @@ class Cook:
         self.netWithdrawalOfSignals = None
         self.possibleTimes = None
         self.referencesOfSignals = None
+
     def getSignalsInRelation(self):
         return self.signalsInRelation
 
@@ -70,7 +71,7 @@ class Cook:
         return self.involvedSignals
 
     def collectTomato(self, inputFile):
-        df = pd.read_excel(inputFile, sheet_name=0, na_values=['-','#N/A', 'NaN'])
+        df = pd.read_excel(inputFile, sheet_name=0, na_values=['-', '#N/A', 'NaN'])
         # delete unneeded columns
         if u'备注' in df.columns:
             del df[u'备注']
@@ -111,7 +112,6 @@ class Cook:
 
             self.referencesOfSignals[item] = self.__signal_info.loc[item, u'最小手数']
 
-
     def checkReferencesIsAboveZero(self, target_signals):
         for item in target_signals:
             if self.referencesOfSignals[item] <= 0:
@@ -126,9 +126,6 @@ class Cook:
             if item not in available_signals:
                 raise Exception("singal:{} is not an available signal,"
                                 " it means that {} is neither in singals table nor relations table".format(item, item))
-
-
-
 
     def getStandardDeviationOfSignals(self):
         return self.standardDeviationOfSignals
@@ -174,17 +171,17 @@ class Cook:
 
         normalTable = [x for x in ifilter(lambda x: x != urgentTable, tablesInCall)]
 
-        urgentDish =  dishes[urgentTable]
+        urgentDish = dishes[urgentTable]
 
         sequence = []
         for n in range(len(urgentDish)):
             tables = copy(normalTable)
             tables.insert(0, urgentTable)
 
-            dishesForTable = copy([dishes[t] for t in normalTable ])
+            dishesForTable = copy([dishes[t] for t in normalTable])
             dishesForTable.insert(0, [urgentDish[n]])
 
-            st = SmallTask(n,tables, dishesForTable, start= 0 )
+            st = SmallTask(n, tables, dishesForTable, start=0)
             sequence.append(st)
 
         return sequence
@@ -192,10 +189,9 @@ class Cook:
     def describeDishes(self, possible_times):
         dishes = {}
         for key, value in possible_times.items():
-            dishes[key] = [x for x in np.arange(0.0, value, step= np.float64(0.01), dtype=np.float64)]
+            dishes[key] = [x for x in np.arange(0.0, value, step=np.float64(0.01), dtype=np.float64)]
             dishes[key].append(value)
         return dishes
-
 
     def loadPlate(self, dish, filter):
         filtered_df = dish.loc[dish.apply(filter, axis=1), :]

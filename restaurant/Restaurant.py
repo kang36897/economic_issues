@@ -11,6 +11,15 @@ def wrapper(chef, st):
     return chef.handleOrder(st)
 
 
+def collect_active_signals(row, full_signals):
+    count = 0
+    for item in full_signals:
+        if row[item] != 0:
+            count += 1
+
+    return count
+
+
 class Restaurant:
 
     def __init__(self, cpu_num, servant, balance):
@@ -42,6 +51,8 @@ class Restaurant:
         ideal_columns = copy(full_signals)
         ideal_columns.extend(shared_columns)
 
+        df['active_num'] = df.apply(collect_active_signals, args=(full_signals,), axis=1)
+        ideal_columns.insert(0, 'active_num')
         return df[ideal_columns]
 
     def serveCustomer(self, desired_signals, data_savers):
