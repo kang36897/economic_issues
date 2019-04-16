@@ -28,10 +28,11 @@ if __name__ == '__main__':
     start_time = datetime.now()
     print "begin to predict ........."
 
-    config_file = path.join(path.abspath("config"), "config.json")
+    input_directory = path.abspath("inputs")
+    config_file = path.join(input_directory, "config.json")
     keep_material_in_place([config_file])
 
-    input_directory = path.abspath("inputs")
+
     config_data = load_config(config_file)
 
     cook = Cook()
