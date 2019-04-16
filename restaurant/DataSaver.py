@@ -24,7 +24,7 @@ class CSVSaver(Saver):
     def save(self, df, desired_signals=None):
         csv_file = path.join(self.default_delivery_path, "{}.csv".format("+".join(desired_signals)))
         df.to_csv(csv_file, encoding=self.default_encoding,
-                  float_format=self.default_float_format)
+                  float_format=self.default_float_format, index=False)
 
 
 class DBSaver(Saver):
