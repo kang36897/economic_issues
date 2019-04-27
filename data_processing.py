@@ -79,8 +79,9 @@ if __name__ == '__main__':
             'exp_return_ratio']
         sharp_ratio = None if 'sharp_ratio' not in config_data['filter'] else config_data['filter']['sharp_ratio']
         pl_ratio = None if 'pl_ratio' not in config_data['filter'] else config_data['filter']['pl_ratio']
+        max_active_num = None if 'max_active_num' not in config_data['filter'] else config_data['filter']['max_active_num']
         sieve = Sieve(drawback_ratio=drawback_ratio, exp_return_ratio=exp_return_ratio,
-                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio)
+                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num = max_active_num)
     else:
         sieve = Sieve()
 

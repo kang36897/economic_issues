@@ -2,11 +2,12 @@
 
 class Sieve:
 
-    def __init__(self, drawback_ratio=None, exp_return_ratio=None, sharp_ratio=None, pl_ratio=None):
+    def __init__(self, drawback_ratio=None, exp_return_ratio=None, sharp_ratio=None, pl_ratio=None, max_active_num=None):
         self.drawback_ratio = drawback_ratio
         self.exp_return_ratio = exp_return_ratio
         self.sharp_ratio = sharp_ratio
         self.pl_ratio = pl_ratio
+        self.max_active_num = max_active_num
 
     def filter(self, row):
         flag = True
@@ -29,6 +30,8 @@ class Sieve:
         if self.pl_ratio is not None:
             flag = (row[u'pl%'] >= self.pl_ratio) and flag
 
+        if self.max_active_num is not None:
+            flag = (row[u'active_num'] <= self.max_active_num) and flag
         return flag
 
 
