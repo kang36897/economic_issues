@@ -17,7 +17,7 @@ class Chain:
         self.cpu_num = cpu_num
         self.balance = balance
 
-    def doBusiness(self, target_signals, data_savers, filter):
+    def doBusiness(self, target_signals, data_savers, filter, max_active_num = -1):
         self.cook.checkDesiredSignalsIsAvailable(target_signals)
         self.cook.checkReferencesIsAboveZero(target_signals)
 
