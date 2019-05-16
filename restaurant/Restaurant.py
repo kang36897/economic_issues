@@ -100,7 +100,7 @@ class Restaurant:
 
         final_df = pd.concat(dishesAfterAddressing, ignore_index=True)
 
-        final_df = self.compensate(dish, desired_signals, self.servant.getInvolvedSignals())
+        final_df = self.compensate(final_df, desired_signals, self.servant.getInvolvedSignals())
 
         final_df = self.servant.loadPlate(final_df, self.sieve.filter)
 
