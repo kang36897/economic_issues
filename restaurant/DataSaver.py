@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from os import path
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Integer, Float
 
 
 class Saver:
@@ -51,3 +51,26 @@ class DBSaver(Saver):
         rounded_df = df.round(2)
         rounded_df.to_sql(name=self.table_name, con=engine, if_exists=self.reaction, index=False,
                           dtype=self.column_dtype)
+
+    def createSaver(mysql_config, involved_signals):
+        column_type = {
+            'balance': Integer(),
+            'covariance': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+            'times': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+            'drawback': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+            'exp_profit': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+            'drawback%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+            'exp_profit%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+            'sharp%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
+            'pl%': Float(precision=2, asdecimal=True, decimal_return_scale=2)
+        }
+        for item in involved_signals:
+            column_type[item] = Float(precision=2, asdecimal=True, decimal_return_scale=2)
+
+        return DBSaver(mysql_config['table_name'],
+                       'mysql+mysqlconnector://{}:{}@{}:{}/{}'.format(mysql_config['user'], mysql_config['pass'],
+                                                                      mysql_config['host'], mysql_config['port'],
+                                                                      mysql_config['schema']),
+                       schema=mysql_config['schema'],
+                       column_dtype=column_type
+                       )

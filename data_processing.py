@@ -47,27 +47,10 @@ if __name__ == '__main__':
     # 2.1 host -> 127.0.0.1, default port is 3306
     # db_saver = DBSaver('financial_predict',  'mysql+mysqlconnector://[user]:[pass]@[host]:[port]/[schema]', schema='investment')
     mysql_config = config_data["mysql"]
-    column_type = {
-        'balance': Integer(),
-        'covariance': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'times': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'drawback': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'exp_profit': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'drawback%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'exp_profit%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'sharp%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'pl%': Float(precision=2, asdecimal=True, decimal_return_scale=2)
-    }
-    for item in cook.getInvolvedSignals():
-        column_type[item] = Float(precision=2, asdecimal=True, decimal_return_scale=2)
+    mssql_config = config_data['mssql']
 
-    db_saver = DBSaver(mysql_config['table_name'],
-                       'mysql+mysqlconnector://{}:{}@{}:{}/{}'.format(mysql_config['user'], mysql_config['pass'],
-                                                                      mysql_config['host'], mysql_config['port'],
-                                                                      mysql_config['schema']),
-                       schema=mysql_config['schema'],
-                       column_dtype=column_type
-                       )
+
+    db_saver = DBSaver.createSaver(mssql_config, cook.getInvolvedSignals())
 
     savers = [csv_saver]
 
