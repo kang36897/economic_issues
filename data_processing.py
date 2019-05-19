@@ -3,8 +3,6 @@ import json
 from datetime import datetime
 from os import path
 
-from sqlalchemy.types import Float, Integer
-
 from restaurant.Chain import Chain
 from restaurant.Cook import Cook
 from restaurant.DataSaver import CSVSaver, DBSaver
@@ -32,7 +30,6 @@ if __name__ == '__main__':
     config_file = path.join(input_directory, "config.json")
     keep_material_in_place([config_file])
 
-
     config_data = load_config(config_file)
 
     cook = Cook()
@@ -46,30 +43,10 @@ if __name__ == '__main__':
     # 2.replace the parameters in brackets with your real arguments, such as your mysql database user name, password
     # 2.1 host -> 127.0.0.1, default port is 3306
     # db_saver = DBSaver('financial_predict',  'mysql+mysqlconnector://[user]:[pass]@[host]:[port]/[schema]', schema='investment')
-    mysql_config = config_data["mysql"]
-    column_type = {
-        'balance': Integer(),
-        'covariance': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'times': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'drawback': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'exp_profit': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'drawback%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'exp_profit%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'sharp%': Float(precision=2, asdecimal=True, decimal_return_scale=2),
-        'pl%': Float(precision=2, asdecimal=True, decimal_return_scale=2)
-    }
-    for item in cook.getInvolvedSignals():
-        column_type[item] = Float(precision=2, asdecimal=True, decimal_return_scale=2)
+    db_config = config_data["db_config"]
+    db_saver = DBSaver.createSaver(db_config, cook.getInvolvedSignals())
 
-    db_saver = DBSaver(mysql_config['table_name'],
-                       'mysql+mysqlconnector://{}:{}@{}:{}/{}'.format(mysql_config['user'], mysql_config['pass'],
-                                                                      mysql_config['host'], mysql_config['port'],
-                                                                      mysql_config['schema']),
-                       schema=mysql_config['schema'],
-                       column_dtype=column_type
-                       )
-
-    savers = [csv_saver]
+    savers = [csv_saver, db_saver]
 
     sieve = None
     if 'filter' in config_data:
@@ -79,9 +56,10 @@ if __name__ == '__main__':
             'exp_return_ratio']
         sharp_ratio = None if 'sharp_ratio' not in config_data['filter'] else config_data['filter']['sharp_ratio']
         pl_ratio = None if 'pl_ratio' not in config_data['filter'] else config_data['filter']['pl_ratio']
-        max_active_num = None if 'max_active_num' not in config_data['filter'] else config_data['filter']['max_active_num']
+        max_active_num = None if 'max_active_num' not in config_data['filter'] else config_data['filter'][
+            'max_active_num']
         sieve = Sieve(drawback_ratio=drawback_ratio, exp_return_ratio=exp_return_ratio,
-                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num = max_active_num)
+                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num=max_active_num)
     else:
         sieve = Sieve()
 
@@ -91,5 +69,3 @@ if __name__ == '__main__':
     time_elapsed = datetime.now() - start_time
     print "Prediction is completed ........."
     print 'Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed)
-
-
