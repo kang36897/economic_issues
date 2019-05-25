@@ -34,7 +34,8 @@ if __name__ == '__main__':
 
     cook = Cook()
     cook.collectPotato(path.join(input_directory, config_data["relation_file"]))
-    cook.collectTomato(path.join(input_directory, config_data["signal_file"]))
+    cook.collectTomato(path.join(input_directory, config_data["signal_file"]),
+                       config_data['risk_ratio'], config_data['balance'])
     cook.sortInvolvedSignals()
 
     csv_saver = CSVSaver(path.abspath("outputs"))

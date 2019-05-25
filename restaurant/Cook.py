@@ -9,6 +9,22 @@ from copy import copy
 import math
 
 
+def calculateMultiple(row, risk_ratio, balance):
+    key  = row[u'信号名称']
+    if row[u'最小手数'] == 0:
+        return 0
+
+    if row[u'净值回撤'] == 0:
+        return 0
+
+    if key not in risk_ratio:
+        return 0
+
+    return math.floor(math.fabs((balance * risk_ratio[key])/(row[u'净值回撤']/ (row[u'最小手数'] / 0.01))))
+
+
+    pass
+
 class Cook:
 
     def __init__(self):
@@ -70,7 +86,9 @@ class Cook:
     def getInvolvedSignals(self):
         return self.involvedSignals
 
-    def collectTomato(self, inputFile):
+
+
+    def collectTomato(self, inputFile, risk_ratio, balance):
         df = pd.read_excel(inputFile, sheet_name=0, na_values=['-', '#N/A', 'NaN'])
         # delete unneeded columns
         if u'备注' in df.columns:
@@ -89,7 +107,14 @@ class Cook:
             u'最小手数': 2
         })
 
+        print  self.__signal_info[u'测试倍数']
+
+        self.__signal_info[u'测试倍数'] = self.__signal_info.apply(calculateMultiple, axis = 1, args=(risk_ratio, balance))
+
+        print  self.__signal_info[u'测试倍数']
+
         self.__signal_info = self.__signal_info.set_index(u'信号名称')
+
 
         self.standardDeviationOfSignals = {}
         for item in self.involvedSignals:
