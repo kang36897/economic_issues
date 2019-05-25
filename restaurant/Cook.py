@@ -107,14 +107,10 @@ class Cook:
             u'最小手数': 2
         })
 
-        print  self.__signal_info[u'测试倍数']
 
         self.__signal_info[u'测试倍数'] = self.__signal_info.apply(calculateMultiple, axis = 1, args=(risk_ratio, balance))
 
-        print  self.__signal_info[u'测试倍数']
-
         self.__signal_info = self.__signal_info.set_index(u'信号名称')
-
 
         self.standardDeviationOfSignals = {}
         for item in self.involvedSignals:
