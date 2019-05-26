@@ -20,7 +20,7 @@ def calculateMultiple(row, risk_ratio, balance):
     if key not in risk_ratio:
         return 0
 
-    return math.floor(math.fabs((balance * risk_ratio[key])/(row[u'净值回撤']/ (row[u'最小手数'] / 0.01))))
+    return math.floor(math.fabs((balance * risk_ratio[key] / 100)/(row[u'净值回撤']/ (row[u'最小手数'] / 0.01))))
 
 
     pass
