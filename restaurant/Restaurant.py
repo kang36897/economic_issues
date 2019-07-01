@@ -96,18 +96,16 @@ class Restaurant:
 
         result_set.extend([r.get() for r in async_result_set])
 
-        dishesAfterAddressing = [self.servant.loadPlate(dish, self.sieve.filter) for dish in result_set]
+        for r in async_result_set:
+            dish = r.get();
+            dishAfterAddressing = self.servant.loadPlate(dish, self.sieve.filter);
+            formatted_df = self.compensate(dishAfterAddressing, desired_signals, self.servant.getInvolvedSignals())
+            final_df = self.servant.loadPlate(formatted_df, self.sieve.filter)
 
-        final_df = pd.concat(dishesAfterAddressing, ignore_index=True)
+            for saver in data_savers:
+                saver.save(final_df, desired_signals=desired_signals)
 
-        final_df = self.compensate(final_df, desired_signals, self.servant.getInvolvedSignals())
 
-        final_df = self.servant.loadPlate(final_df, self.sieve.filter)
-
-        for saver in data_savers:
-            saver.save(final_df, desired_signals=desired_signals)
-
-        return final_df
 
     def setFilter(self, filter):
         self.sieve = filter
