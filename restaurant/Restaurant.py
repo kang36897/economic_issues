@@ -124,5 +124,6 @@ class Restaurant:
         self.p.close()
         self.p.join()
 
+
     def setFilter(self, draftSieve):
         self.sieve = draftSieve
