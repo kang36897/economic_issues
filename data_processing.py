@@ -6,7 +6,6 @@ from os import path
 from restaurant.Chain import Chain
 from restaurant.Cook import Cook
 from restaurant.DataSaver import CSVSaver, DBSaver
-from restaurant.Sieve import Sieve
 
 
 def keep_material_in_place(input_files):
@@ -47,9 +46,9 @@ if __name__ == '__main__':
     db_config = config_data["db_config"]
     db_saver = DBSaver.createSaver(db_config, cook.getInvolvedSignals())
 
-    savers = [csv_saver, db_saver]
+    savers = [csv_saver]
 
-    sieve = None
+    draftSieve = None
     if 'filter' in config_data:
         drawback_ratio = None if 'drawback_ratio' not in config_data['filter'] else config_data['filter'][
             'drawback_ratio']
@@ -59,13 +58,11 @@ if __name__ == '__main__':
         pl_ratio = None if 'pl_ratio' not in config_data['filter'] else config_data['filter']['pl_ratio']
         max_active_num = None if 'max_active_num' not in config_data['filter'] else config_data['filter'][
             'max_active_num']
-        sieve = Sieve(drawback_ratio=drawback_ratio, exp_return_ratio=exp_return_ratio,
-                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num=max_active_num)
-    else:
-        sieve = Sieve()
+        draftSieve = (drawback_ratio,exp_return_ratio,sharp_ratio,pl_ratio, max_active_num)
+
 
     chain = Chain(cook, config_data['cpu_num'], config_data['balance'])
-    chain.doBusiness(config_data['target_signals'], savers, sieve)
+    chain.doBusiness(config_data['target_signals'], savers, draftSieve)
 
     time_elapsed = datetime.now() - start_time
     print "Prediction is completed ........."
