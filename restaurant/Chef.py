@@ -142,7 +142,6 @@ class Chef:
         self.redefineColumns(self.columnsInRedefinedOrder, mapper=self.columnMapper)
         time_elapsed = datetime.now() - start_time
         print 'doSpecialDish()-> Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed)
-        print st.reportProgress()
         pass
 
     def handleOrder(self, st):
