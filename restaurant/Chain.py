@@ -17,11 +17,11 @@ class Chain:
         self.cpu_num = cpu_num
         self.balance = balance
 
-    def doBusiness(self, target_signals, data_savers, filter):
+    def doBusiness(self, target_signals, data_savers, draftSieve):
         self.cook.checkDesiredSignalsIsAvailable(target_signals)
         self.cook.checkReferencesIsAboveZero(target_signals)
 
         # for item in self.iteratePossiblePackage(target_signals):
         restaurant = Restaurant(self.cpu_num, self.cook, self.balance)
-        restaurant.setFilter(filter)
+        restaurant.setFilter(draftSieve)
         restaurant.serveCustomer(target_signals, data_savers)

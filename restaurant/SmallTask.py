@@ -23,13 +23,28 @@ class SmallTask:
         self.page_size = min(default_page_size, self.record_size)
 
         self.start = start
+        self.isSeed = True if start == 0 else False
         self.stop = self.start + self.page_size
         self.is_complete = False
 
     def generateNextTask(self):
 
-        return SmallTask(self.no, self.column_names, self.column_seeds, start=self.stop,
+        nextTask = SmallTask(self.no, self.column_names, self.column_seeds, start=self.stop,
                          default_page_size=self.page_size)
+
+        self.stop = self.stop + self.page_size
+        return nextTask;
+
+    def __iter__(self):
+        return self;
+
+    def __next__(self):
+
+        if  self.isDone():
+            raise StopIteration;
+
+        return self if self.isSeed else self.generateNextTask()
+
 
     def generateDataSource(self):
         return product(*self.column_seeds)
@@ -40,7 +55,7 @@ class SmallTask:
         return frame
 
     def isDone(self):
-        return self.is_complete and self.stop >= self.record_size
+        return  self.stop >= self.record_size
 
     def isComplete(self):
         return self.is_complete

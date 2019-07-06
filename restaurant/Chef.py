@@ -64,7 +64,7 @@ def calculate_pl(row, names_of_signals, references_of_signals, standard_deviatio
 
 
 class Chef:
-    def __init__(self, queue,
+    def __init__(self,
                  names_of_signals=None,
                  references_of_signals=None,
                  standard_deviation_of_signals=None,
@@ -72,7 +72,6 @@ class Chef:
                  net_withdrawal_of_signals=None,
                  relation=None,
                  balance=None):
-        self.__queue = queue
         self.__base_dish = None
 
         self.desiredFavor = names_of_signals
@@ -90,9 +89,6 @@ class Chef:
     def sliceTomato(self, st):
         df = pd.DataFrame(data=st.generateFrame(), columns=st.column_names)
         df = df.round(decimals=2)
-
-        if not st.isDone():
-            self.__queue.put(st.generateNextTask())
 
         self.__base_dish = df
         # print self.__base_dish
