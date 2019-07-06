@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
 import itertools
+from copy import copy
 from multiprocessing import Pool, Manager, Lock
 
 from Chef import Chef
-import pandas as pd
-from os import path
-from copy import copy
-
 from restaurant.Sieve import Sieve
 
 
 def wrapper(chef, st):
     return chef.handleOrder(st)
-
-
 
 
 def collect_active_signals(row, full_signals):
@@ -23,6 +18,7 @@ def collect_active_signals(row, full_signals):
             count += 1
 
     return count
+
 
 def compensate(df, desired_signals, full_signals):
     shared_columns = []
@@ -42,16 +38,18 @@ def compensate(df, desired_signals, full_signals):
     ideal_columns.insert(0, 'active_num')
     return df[ideal_columns]
 
+
 def carryOut(task):
     st, chef_requirement, draftSieve, full_signals, data_savers = task
-    names_of_signals, references_of_signals, standard_deviation_of_signals,\
+    names_of_signals, references_of_signals, standard_deviation_of_signals, \
     expected_return_of_signals, net_withdrawal_of_signals, relation, balance = chef_requirement
 
-    sieve = None
+    sieve = Sieve()
     if draftSieve is not None:
         drawback_ratio, exp_return_ratio, sharp_ratio, pl_ratio, max_active_num = draftSieve
         sieve = Sieve(drawback_ratio=drawback_ratio, exp_return_ratio=exp_return_ratio,
                       sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num=max_active_num)
+
 
     chef = Chef(
         names_of_signals=names_of_signals,
@@ -67,17 +65,27 @@ def carryOut(task):
          u'sharp%', u'pl%'])
 
     dish = chef.handleOrder(st)
+
+
     filtered_df = dish.loc[dish.apply(sieve.filter, axis=1), :]
+    row, column = filtered_df.shape
+
+    if row == 0:
+        print 'Task {} at ({}/{}) without no answer '.format(st.no, (st.start / st.page_size), (st.record_size / st.page_size))
+        print st.reportProgress()
+        return True
+
     final_df = compensate(filtered_df, names_of_signals, full_signals)
 
     filePrefix = ['{}({}@{})'.format(st.no, (st.start / st.page_size), (st.record_size / st.page_size))]
     filePrefix.extend(names_of_signals)
     for saver in data_savers:
-        saver.save(final_df, desired_signals= filePrefix)
+        saver.save(final_df, desired_signals=filePrefix)
 
-    st.reportProgress()
+    print st.reportProgress()
 
     return True
+
 
 class Restaurant:
 
@@ -87,7 +95,6 @@ class Restaurant:
         self.m = Manager()
         self.servant = servant
 
-
         self.balance = balance
         self.task_lock = Lock()
 
@@ -95,8 +102,6 @@ class Restaurant:
 
     def getTaskLock(self):
         return self.task_lock
-
-
 
     def serveCustomer(self, desired_signals, data_savers):
         taskSequence = self.servant.receiveOrders(desired_signals)
@@ -111,7 +116,10 @@ class Restaurant:
 
         full_signals = self.servant.getInvolvedSignals()
 
-        self.p.map(carryOut, [(st, (names_of_signals, references_of_signals, standard_deviation_of_signals, expected_return_of_signals, net_withdrawal_of_signals, relation, balance), self.sieve, full_signals, data_savers) for st in itertools.chain(taskSequence)])
+        self.p.map(carryOut, [(st, (
+        names_of_signals, references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
+        net_withdrawal_of_signals, relation, balance), self.sieve, full_signals, data_savers) for st in
+                              itertools.chain(taskSequence)])
 
         self.p.close()
         self.p.join()
