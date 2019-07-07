@@ -10,7 +10,7 @@ import math
 
 
 def calculateMultiple(row, risk_ratio, balance):
-    key  = row[u'信号名称']
+    key = row[u'信号名称']
     if row[u'最小手数'] == 0:
         return 0
 
@@ -20,10 +20,18 @@ def calculateMultiple(row, risk_ratio, balance):
     if key not in risk_ratio:
         return 0
 
-    return math.floor(math.fabs((balance * risk_ratio[key] * 1.0 / 100)/(row[u'净值回撤']/ (row[u'最小手数'] / 0.01))))
-
+    return math.floor(math.fabs((balance * risk_ratio[key] * 1.0 / 100) / (row[u'净值回撤'] / (row[u'最小手数'] / 0.01))))
 
     pass
+
+
+def calculateHistory(row):
+    return round((row[u'检查日期'] - row[u'运行开始']).days / 22.5)
+
+
+def pickUpBasedOn(row, criteria):
+    return row['history'] > criteria[u'history'] and abs(row[u'方差倍数']) < criteria[u'variance']
+
 
 class Cook:
 
@@ -31,6 +39,7 @@ class Cook:
         self.__relationship = None
         self.signalsInRelation = None
         self.relationOfSignals = None
+        self.poisonMushroom = []
 
         self.__signal_info = None
         self.involvedSignals = None
@@ -40,6 +49,7 @@ class Cook:
         self.netWithdrawalOfSignals = None
         self.possibleTimes = None
         self.referencesOfSignals = None
+        self.targetSignals = None
 
     def getSignalsInRelation(self):
         return self.signalsInRelation
@@ -80,13 +90,24 @@ class Cook:
                 self.relationOfSignals[(row, column)] = v
                 self.relationOfSignals[(column, row)] = v
 
+
+    def identifyPoisonMushroom(self, relevance):
+        for (key, value) in self.relationOfSignals.items():
+            if value > relevance:
+                left, right = key
+                if left == right or ((right, left) in self.poisonMushroom):
+                    continue
+
+                self.poisonMushroom.append(key)
+
+    def getPoisionMushroom(self):
+        return self.poisonMushroom
+
     def getRelationOfSignal(self):
         return self.relationOfSignals
 
     def getInvolvedSignals(self):
         return self.involvedSignals
-
-
 
     def collectTomato(self, inputFile, risk_ratio, balance):
         df = pd.read_excel(inputFile, sheet_name=0, na_values=['-', '#N/A', 'NaN'])
@@ -96,9 +117,12 @@ class Cook:
 
         self.__signal_info = df.fillna(0)
 
-        self.involvedSignals = df[u'信号名称'].to_list()
+        self.involvedSignals = self.__signal_info[u'信号名称'].to_list()
 
-        self.__signal_info = df.copy()[[u'信号名称', u'标准差', u'预期回报', u'净值回撤', u'最小手数', u'测试倍数']]
+        self.__signal_info[u'history'] = self.__signal_info.apply(calculateHistory, axis=1)
+        self.__signal_info = self.__signal_info.copy()[
+            [u'信号名称', u'标准差', u'预期回报', u'净值回撤', u'最小手数', u'测试倍数', u'history', u'方差倍数']]
+
         # print self.__signal_info
         self.__signal_info = self.__signal_info.round(decimals={
             u'标准差': 4,
@@ -107,8 +131,7 @@ class Cook:
             u'最小手数': 2
         })
 
-
-        self.__signal_info[u'测试倍数'] = self.__signal_info.apply(calculateMultiple, axis = 1, args=(risk_ratio, balance))
+        self.__signal_info[u'测试倍数'] = self.__signal_info.apply(calculateMultiple, axis=1, args=(risk_ratio, balance))
 
         self.__signal_info = self.__signal_info.set_index(u'信号名称')
 
@@ -132,6 +155,14 @@ class Cook:
                 item, u'测试倍数']
 
             self.referencesOfSignals[item] = self.__signal_info.loc[item, u'最小手数']
+
+    def pickUpTargetSignals(self, criteria):
+        if self.targetSignals is not None:
+            return self.targetSignals
+
+        temp = self.__signal_info[self.__signal_info.apply(pickUpBasedOn, axis = 1, args = (criteria,))]
+        self.targetSignals = list(temp.index)
+        return self.targetSignals
 
     def checkReferencesIsAboveZero(self, target_signals):
         for item in target_signals:

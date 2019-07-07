@@ -11,6 +11,10 @@ from restaurant.Utils import compareListIgnoreOrder
 
 
 class CookTest(unittest.TestCase):
+    def test_collectTomato(self):
+        hm = Cook()
+        hm.collectTomato(path.abspath("resources/signals.xlsx"))
+
 
     def test_getSignalsInRelation_after_collectPotato(self):
         expect_columns = [u'CJM622', u'CJM815', u'CJM995', u'DEMOZ', u'DM0066', u'DM8034', u'USG']
