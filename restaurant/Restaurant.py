@@ -46,9 +46,9 @@ def carryOut(task):
 
     sieve = Sieve()
     if draftSieve is not None:
-        drawback_ratio, exp_return_ratio, sharp_ratio, pl_ratio, max_active_num = draftSieve
+        drawback_ratio, exp_return_ratio, sharp_ratio, pl_ratio, max_active_num, poison_mushroom = draftSieve
         sieve = Sieve(drawback_ratio=drawback_ratio, exp_return_ratio=exp_return_ratio,
-                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num=max_active_num)
+                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num=max_active_num, poison_mushroom = poison_mushroom)
 
 
     chef = Chef(
@@ -98,7 +98,7 @@ class Restaurant:
         self.balance = balance
         self.task_lock = Lock()
 
-        self.sieve = None
+        self.draftSieve = None
 
     def getTaskLock(self):
         return self.task_lock
@@ -118,7 +118,7 @@ class Restaurant:
 
         self.p.map(carryOut, [(st, (
         names_of_signals, references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
-        net_withdrawal_of_signals, relation, balance), self.sieve, full_signals, data_savers) for st in
+        net_withdrawal_of_signals, relation, balance), self.draftSieve, full_signals, data_savers) for st in
                               itertools.chain(taskSequence)])
 
         self.p.close()
@@ -126,4 +126,6 @@ class Restaurant:
 
 
     def setFilter(self, draftSieve):
-        self.sieve = draftSieve
+        self.draftSieve = draftSieve
+
+

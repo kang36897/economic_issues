@@ -36,6 +36,13 @@ if __name__ == '__main__':
     cook.collectTomato(path.join(input_directory, config_data["signal_file"]),
                        config_data['risk_ratio'], config_data['balance'])
     cook.sortInvolvedSignals()
+    cook.identifyPoisonMushroom(config_data["filter"]["relevance"])
+
+    target_criteria = config_data['target_signals']
+    target_signals = cook.pickUpTargetSignals(target_criteria)
+    print 'Target signals: {}'.format(target_signals)
+
+
 
     csv_saver = CSVSaver(path.abspath("outputs"))
 
@@ -46,9 +53,15 @@ if __name__ == '__main__':
     db_config = config_data["db_config"]
     db_saver = DBSaver.createSaver(db_config, cook.getInvolvedSignals())
 
-    savers = [db_saver]
+    savers = [csv_saver]
 
     draftSieve = None
+    drawback_ratio = None
+    exp_return_ratio = None
+    sharp_ratio = None
+    pl_ratio = None
+    max_active_num = None
+
     if 'filter' in config_data:
         drawback_ratio = None if 'drawback_ratio' not in config_data['filter'] else config_data['filter'][
             'drawback_ratio']
@@ -58,11 +71,13 @@ if __name__ == '__main__':
         pl_ratio = None if 'pl_ratio' not in config_data['filter'] else config_data['filter']['pl_ratio']
         max_active_num = None if 'max_active_num' not in config_data['filter'] else config_data['filter'][
             'max_active_num']
-        draftSieve = (drawback_ratio,exp_return_ratio,sharp_ratio,pl_ratio, max_active_num)
+
+    draftSieve = (drawback_ratio,exp_return_ratio,sharp_ratio,pl_ratio, max_active_num, cook.getPoisionMushroom())
+
 
 
     chain = Chain(cook, config_data['cpu_num'], config_data['balance'])
-    chain.doBusiness(config_data['target_signals'], savers, draftSieve)
+    chain.doBusiness(target_signals, savers, draftSieve)
 
     time_elapsed = datetime.now() - start_time
     print "Prediction is completed ........."

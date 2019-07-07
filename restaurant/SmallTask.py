@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from itertools import product
 from itertools import islice
+from itertools import product
+
 from Utils import compareListIgnoreOrder
-import math
+
 
 def calculate_record_size(columns_seeds):
     total = 1
@@ -30,7 +31,7 @@ class SmallTask:
     def generateNextTask(self):
 
         nextTask = SmallTask(self.no, self.column_names, self.column_seeds, start=self.stop,
-                         default_page_size=self.page_size)
+                             default_page_size=self.page_size)
 
         self.stop = self.stop + self.page_size
         return nextTask;
@@ -40,11 +41,10 @@ class SmallTask:
 
     def __next__(self):
 
-        if  self.isDone():
+        if self.isDone():
             raise StopIteration;
 
         return self if self.isSeed else self.generateNextTask()
-
 
     def generateDataSource(self):
         return product(*self.column_seeds)
@@ -55,7 +55,7 @@ class SmallTask:
         return frame
 
     def isDone(self):
-        return  self.stop >= self.record_size
+        return self.stop >= self.record_size
 
     def isComplete(self):
         return self.is_complete
