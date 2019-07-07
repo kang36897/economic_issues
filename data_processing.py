@@ -53,7 +53,7 @@ if __name__ == '__main__':
     db_config = config_data["db_config"]
     db_saver = DBSaver.createSaver(db_config, cook.getInvolvedSignals())
 
-    savers = [csv_saver]
+    savers = [db_saver]
 
     draftSieve = None
     drawback_ratio = None

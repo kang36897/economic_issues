@@ -26,7 +26,7 @@ def calculateMultiple(row, risk_ratio, balance):
 
 
 def calculateHistory(row):
-    return round((row[u'检查日期'] - row[u'运行开始']).days / 22.5)
+    return round((row[u'检查日期'] - row[u'运行开始']).days / 30.5)
 
 
 def pickUpBasedOn(row, criteria):
