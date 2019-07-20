@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     target_criteria = config_data['target_signals']
     target_signals = cook.pickUpTargetSignals(target_criteria)
-    print 'Target signals: {}'.format(target_signals)
+    print 'Target signals:\n {}\n'.format(target_signals)
 
     print 'Possible Times:'
     columns = cook.getPossibleTimes().keys()
@@ -57,6 +57,16 @@ if __name__ == '__main__':
     pt.index.name = 'signal'
     pt = pt.reset_index()
     print pt[pt.apply(selectPossibleTimes, axis=1, args=(target_signals,))]
+    print '\n'
+
+    print 'Poison Mushroom:'
+    pm = pd.DataFrame(data = cook.getPoisionMushroom(), columns=['LEFT', 'RIGHT'])
+    count, _ = pm.shape
+    if count == 0:
+        print 'There are no poison mushrooms'
+    else:
+        print pm
+    print '\n'
 
     csv_saver = CSVSaver(path.abspath("outputs"))
 
@@ -67,7 +77,7 @@ if __name__ == '__main__':
     db_config = config_data["db_config"]
     db_saver = DBSaver.createSaver(db_config, cook.getInvolvedSignals())
 
-    savers = [csv_saver]
+    savers = [db_saver]
 
     draftSieve = None
     drawback_ratio = None

@@ -34,16 +34,24 @@ def pickUpBasedOn(row, criteria):
 
 class InnerIterable:
 
-
-
-    def __next__(self):
-        pass
+    def __init__(self, normalTable, urgentTable, dishes):
+        self.normalTable = normalTable
+        self.urgentTable = urgentTable
+        self.dishes = dishes
 
 
     def __iter__(self):
-        pass
+        urgentDish = self.dishes[self.urgentTable]
 
+        for n in range(len(urgentDish)):
+            tables = copy(self.normalTable)
+            tables.insert(0, self.urgentTable)
 
+            dishesForTable = copy([self.dishes[t] for t in self.normalTable])
+            dishesForTable.insert(0, [urgentDish[n]])
+
+            st = SmallTask(n, tables, dishesForTable, start=0)
+            yield st
 
 class Cook:
 
@@ -235,17 +243,7 @@ class Cook:
 
         normalTable = [x for x in ifilter(lambda x: x != urgentTable, tablesInCall)]
 
-        urgentDish = dishes[urgentTable]
-
-        for n in range(len(urgentDish)):
-            tables = copy(normalTable)
-            tables.insert(0, urgentTable)
-
-            dishesForTable = copy([dishes[t] for t in normalTable])
-            dishesForTable.insert(0, [urgentDish[n]])
-
-            st = SmallTask(n, tables, dishesForTable, start=0)
-            yield st
+        return InnerIterable(normalTable, urgentTable, dishes)
 
     def describeDishes(self, possible_times):
         dishes = {}
