@@ -22,7 +22,7 @@ def calculateMultiple(row, risk_ratio, balance):
 
     return math.floor(math.fabs((balance * risk_ratio[key] * 1.0 / 100) / (row[u'净值回撤'] / (row[u'最小手数'] / 0.01))))
 
-    pass
+
 
 
 def calculateHistory(row):
@@ -31,6 +31,18 @@ def calculateHistory(row):
 
 def pickUpBasedOn(row, criteria):
     return row['history'] > criteria[u'history'] and abs(row[u'方差倍数']) < criteria[u'variance']
+
+class InnerIterable:
+
+
+
+    def __next__(self):
+        pass
+
+
+    def __iter__(self):
+        pass
+
 
 
 class Cook:
@@ -225,7 +237,6 @@ class Cook:
 
         urgentDish = dishes[urgentTable]
 
-        sequence = []
         for n in range(len(urgentDish)):
             tables = copy(normalTable)
             tables.insert(0, urgentTable)
@@ -234,9 +245,7 @@ class Cook:
             dishesForTable.insert(0, [urgentDish[n]])
 
             st = SmallTask(n, tables, dishesForTable, start=0)
-            sequence.append(st)
-
-        return sequence
+            yield st
 
     def describeDishes(self, possible_times):
         dishes = {}

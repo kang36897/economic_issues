@@ -104,7 +104,7 @@ class Restaurant:
         return self.task_lock
 
     def serveCustomer(self, desired_signals, data_savers):
-        taskSequence = self.servant.receiveOrders(desired_signals)
+        # taskSequence = self.servant.receiveOrders(desired_signals)
 
         names_of_signals = desired_signals
         references_of_signals = self.servant.getReferencesOfSignals()
@@ -119,7 +119,7 @@ class Restaurant:
         self.p.map(carryOut, [(st, (
         names_of_signals, references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
         net_withdrawal_of_signals, relation, balance), self.draftSieve, full_signals, data_savers) for st in
-                              itertools.chain(taskSequence)])
+                              itertools.chain(self.servant.receiveOrders(desired_signals))])
 
         self.p.close()
         self.p.join()
