@@ -91,7 +91,7 @@ class Chef:
         df = df.round(decimals=2)
 
         self.__base_dish = df
-        # print self.__base_dish
+        print self.__base_dish
         return df
 
     def stir(self):
@@ -138,8 +138,8 @@ class Chef:
     def doSpecialDish(self, st):
         start_time = datetime.now()
         self.sliceTomato(st)
-        self.stir()
-        self.redefineColumns(self.columnsInRedefinedOrder, mapper=self.columnMapper)
+        # self.stir()
+        # self.redefineColumns(self.columnsInRedefinedOrder, mapper=self.columnMapper)
         time_elapsed = datetime.now() - start_time
         print 'doSpecialDish()-> Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed)
         pass

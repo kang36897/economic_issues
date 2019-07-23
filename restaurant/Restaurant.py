@@ -114,12 +114,12 @@ class Restaurant:
         relation = self.servant.getRelationOfSignal()
         balance = self.balance
 
-        full_signals = self.servant.getInvolvedSignals()
+        full_signals = desired_signals
 
         self.p.map(carryOut, [(st, (
         names_of_signals, references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
         net_withdrawal_of_signals, relation, balance), self.draftSieve, full_signals, data_savers) for st in
-                              itertools.chain(self.servant.receiveOrders(desired_signals))])
+                              itertools.chain(self.servant.receiveOrders(desired_signals))], chunksize = 10)
 
         self.p.close()
         self.p.join()

@@ -55,7 +55,7 @@ if __name__ == '__main__':
     pt = pd.DataFrame(data= [ possibleTimes[key] for key in possibleTimes.keys()], index= [key for key in columns],
                       columns = ['possible_times'])
     pt.index.name = 'signal'
-    pt = pt.reset_index()
+    pt = pt.reset_index().sort_values(by=['possible_times'], ascending=False)
     print pt[pt.apply(selectPossibleTimes, axis=1, args=(target_signals,))]
     print '\n'
 
