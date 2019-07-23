@@ -104,7 +104,6 @@ class Restaurant:
         return self.task_lock
 
     def serveCustomer(self, desired_signals, data_savers):
-        # taskSequence = self.servant.receiveOrders(desired_signals)
 
         names_of_signals = desired_signals
         references_of_signals = self.servant.getReferencesOfSignals()
