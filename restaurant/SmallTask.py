@@ -39,8 +39,8 @@ class SmallTask:
     def __iter__(self):
         return self;
 
-    def __next__(self):
 
+    def next(self):
         if self.isDone():
             raise StopIteration;
 
@@ -52,6 +52,8 @@ class SmallTask:
     def generateFrame(self):
         frame = islice(self.generateDataSource(), self.start, self.stop)
         self.is_complete = True
+        self.isSeed = False
+
         return frame
 
     def isDone(self):

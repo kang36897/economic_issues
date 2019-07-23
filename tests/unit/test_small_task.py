@@ -3,12 +3,31 @@ import unittest
 
 from restaurant.SmallTask import SmallTask
 
-
 class SmallTaskTest(unittest.TestCase):
+
+
+    def test_iterables(self):
+        task = SmallTask(0, ["A", 'B', 'C', 'D'], [[1], [0, 1], [0], [0, 1, 2]], default_page_size=3)
+
+        iterator = iter(task)
+        self.assertEquals(iterator, task)
+
+        firstBatch = next(iterator)
+        expected = [(1, 0, 0, 0), (1, 0, 0, 1), (1, 0, 0, 2)]
+
+        self.assertEquals(expected, [item for item in firstBatch.generateFrame()])
+        print firstBatch.reportProgress()
+
+        secondBatch = next(iterator)
+        expected = [(1, 1, 0, 0), (1, 1, 0, 1), (1, 1, 0, 2)]
+        self.assertEquals(expected, [item for item in secondBatch.generateFrame()])
+        print secondBatch.reportProgress()
+
+        self.assertRaises(StopIteration, next, iterator)
 
     def test_isDone_after_creation(self):
 
-        task = SmallTask(0, ["A", 'B'], [[1], [0, 1]], default_page_size= 3)
+        task = SmallTask(0, ["A", 'B', 'C', 'D'], [[1], [0, 1], [0], [0, 1, 2]], default_page_size= 3)
         self.assertFalse(task.isDone(), msg="isDone() should be false after task is created firstly")
 
 

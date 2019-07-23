@@ -6,7 +6,7 @@ from os import path
 from restaurant.Chain import Chain
 from restaurant.Cook import Cook
 from restaurant.DataSaver import CSVSaver, DBSaver
-
+import pandas as pd
 
 def keep_material_in_place(input_files):
     for item in input_files:
@@ -20,6 +20,11 @@ def load_config(config_json):
     with open(config_json, "r") as config:
         return json.load(config, encoding="utf-8")
 
+def selectPossibleTimes(row, target_signals):
+    if row.signal in target_signals:
+        return True
+
+    return False
 
 if __name__ == '__main__':
     start_time = datetime.now()
@@ -36,13 +41,32 @@ if __name__ == '__main__':
     cook.collectTomato(path.join(input_directory, config_data["signal_file"]),
                        config_data['risk_ratio'], config_data['balance'])
     cook.sortInvolvedSignals()
-    cook.identifyPoisonMushroom(config_data["filter"]["relevance"])
+
+    if "filter" in config_data and "relevance" in config_data["filter"]:
+        cook.identifyPoisonMushroom(config_data["filter"]["relevance"])
 
     target_criteria = config_data['target_signals']
     target_signals = cook.pickUpTargetSignals(target_criteria)
-    print 'Target signals: {}'.format(target_signals)
+    print 'Target signals:\n {}\n'.format(target_signals)
 
+    print 'Possible Times:'
+    columns = cook.getPossibleTimes().keys()
+    possibleTimes = cook.getPossibleTimes();
+    pt = pd.DataFrame(data= [ possibleTimes[key] for key in possibleTimes.keys()], index= [key for key in columns],
+                      columns = ['possible_times'])
+    pt.index.name = 'signal'
+    pt = pt.reset_index().sort_values(by=['possible_times'], ascending=False)
+    print pt[pt.apply(selectPossibleTimes, axis=1, args=(target_signals,))]
+    print '\n'
 
+    print 'Poison Mushroom:'
+    pm = pd.DataFrame(data = cook.getPoisionMushroom(), columns=['LEFT', 'RIGHT'])
+    count, _ = pm.shape
+    if count == 0:
+        print 'There are no poison mushrooms'
+    else:
+        print pm
+    print '\n'
 
     csv_saver = CSVSaver(path.abspath("outputs"))
 
