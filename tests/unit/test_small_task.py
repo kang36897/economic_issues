@@ -49,9 +49,10 @@ class SmallTaskTest(unittest.TestCase):
 
     def test_generateNextTask(self):
         task = SmallTask(0, ["A", 'B'], [[0, 1], [0, 1, 2]], default_page_size=3)
-        task.generateFrame()
+        iterator = iter(task)
+        next(task)
 
-        nextTask = task.generateNextTask()
+        nextTask = next(task)
 
         it = nextTask.generateFrame()
         result = list(it)
@@ -67,8 +68,10 @@ class SmallTaskTest(unittest.TestCase):
 
         self.assertEqual("Task {} -> finished : {}, current progress: {}%".format(0, pageSize, 50),
                          task.reportProgress())
-        task.generateFrame()
-        nextTask = task.generateNextTask()
+        iterator = iter(task)
+        next(iterator)
+
+        nextTask = next(iterator)
         self.assertEqual("Task {} -> finished : {}, current progress: {}%".format(0, pageSize * 2, 100),
                          nextTask.reportProgress())
 

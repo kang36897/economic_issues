@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from itertools import ifilter
 
-from SmallTask import SmallTask
+from SmallTask import SmallTask, calculate_record_size
 from copy import copy
 import math
 
@@ -32,26 +32,39 @@ def calculateHistory(row):
 def pickUpBasedOn(row, criteria):
     return row['history'] > criteria[u'history'] and abs(row[u'方差倍数']) < criteria[u'variance']
 
+
+
 class InnerIterable:
 
     def __init__(self, normalTable, urgentTable, dishes):
         self.normalTable = normalTable
         self.urgentTable = urgentTable
         self.dishes = dishes
+        self.urgentDish = self.dishes[self.urgentTable]
 
+        default_page_size = 100 * 1000
+        record_size_per_task = calculate_record_size([self.dishes[t] for t in self.normalTable])
+        page_size = min(default_page_size, record_size_per_task)
+        self.itemCount = len(self.urgentDish) * int(math.ceil(record_size_per_task / page_size))
+
+    def __len__(self):
+        return self.itemCount
 
     def __iter__(self):
-        urgentDish = self.dishes[self.urgentTable]
 
-        for n in range(len(urgentDish)):
+
+        for n in range(len(self.urgentDish)):
             tables = copy(self.normalTable)
             tables.insert(0, self.urgentTable)
 
             dishesForTable = copy([self.dishes[t] for t in self.normalTable])
-            dishesForTable.insert(0, [urgentDish[n]])
+            dishesForTable.insert(0, [self.urgentDish[n]])
 
             st = SmallTask(n, tables, dishesForTable, start=0)
-            yield st
+
+            for item in st:
+                st.isSeed = False
+                yield item
 
 class Cook:
 
