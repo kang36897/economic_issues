@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import math
 from itertools import islice
 from itertools import product
 
@@ -15,7 +16,7 @@ def calculate_record_size(columns_seeds):
 
 
 class SmallTask:
-    def __init__(self, no, column_names, column_seeds, start=0, default_page_size=100 * 1000):
+    def __init__(self, no, column_names, column_seeds, start=0, default_page_size=100 *1000):
         self.no = no
         self.column_names = column_names
         self.column_seeds = column_seeds
@@ -26,14 +27,19 @@ class SmallTask:
         self.start = start
         self.isSeed = True if start == 0 else False
         self.stop = self.start + self.page_size
+        self.toNext = 0
         self.is_complete = False
+
+
+    def __len__(self):
+        return int(math.ceil(self.record_size / self.page_size))
 
     def generateNextTask(self):
 
-        nextTask = SmallTask(self.no, self.column_names, self.column_seeds, start=self.stop,
+        nextTask = SmallTask(self.no, self.column_names, self.column_seeds, start=self.toNext,
                              default_page_size=self.page_size)
 
-        self.stop = self.stop + self.page_size
+        self.toNext = self.toNext + self.page_size
         return nextTask;
 
     def __iter__(self):
@@ -44,7 +50,8 @@ class SmallTask:
         if self.isDone():
             raise StopIteration;
 
-        return self if self.isSeed else self.generateNextTask()
+
+        return self.generateNextTask()
 
     def generateDataSource(self):
         return product(*self.column_seeds)
@@ -57,14 +64,14 @@ class SmallTask:
         return frame
 
     def isDone(self):
-        return self.stop >= self.record_size
+        return self.toNext >= self.record_size
 
     def isComplete(self):
         return self.is_complete
 
     def reportProgress(self):
         return "Task {} -> finished : {}, current progress: {}%".format(self.no, self.stop,
-                                                                        int(self.stop * 100.0 / self.record_size))
+                                (100 if self.stop >= self.record_size else int(self.stop * 100.0 / self.record_size)))
 
     def __eq__(self, other):
         if not isinstance(other, SmallTask):

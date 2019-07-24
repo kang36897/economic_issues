@@ -7,8 +7,34 @@ from Chef import Chef
 from restaurant.Sieve import Sieve
 
 
-def wrapper(chef, st):
-    return chef.handleOrder(st)
+class TaskWrapper:
+    def __init__(self, task_cores, names_of_signals, references_of_signals, standard_deviation_of_signals,
+                 expected_return_of_signals,net_withdrawal_of_signals, relation, balance,  draftSieve,
+                 full_signals,data_savers):
+        self.task_cores = task_cores
+        self.names_of_signals = names_of_signals
+        self.references_of_signals = references_of_signals
+        self.standard_deviation_of_signals = standard_deviation_of_signals
+        self.expected_return_of_signals = expected_return_of_signals
+        self.net_withdrawal_of_signals = net_withdrawal_of_signals
+        self.relation = relation
+        self.balance = balance
+        self.draftSieve = draftSieve
+        self.full_signals = full_signals
+        self.data_savers = data_savers
+
+
+    def __len__(self):
+        return len(self.task_cores)
+
+
+    def __iter__(self):
+
+        for task in self.task_cores:
+            yield (task, (
+        self.names_of_signals, self.references_of_signals, self.standard_deviation_of_signals, self.expected_return_of_signals,
+        self.net_withdrawal_of_signals, self.relation, self.balance), self.draftSieve, self.full_signals, self.data_savers)
+
 
 
 def collect_active_signals(row, full_signals):
@@ -115,10 +141,9 @@ class Restaurant:
 
         full_signals = desired_signals
 
-        self.p.map(carryOut, [(st, (
-        names_of_signals, references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
-        net_withdrawal_of_signals, relation, balance), self.draftSieve, full_signals, data_savers) for st in
-                              itertools.chain(self.servant.receiveOrders(desired_signals))], chunksize = 10)
+        self.p.map(carryOut, TaskWrapper(self.servant.receiveOrders(desired_signals), names_of_signals,
+                                         references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
+        net_withdrawal_of_signals, relation, balance, self.draftSieve, full_signals, data_savers), chunksize = 10)
 
         self.p.close()
         self.p.join()
