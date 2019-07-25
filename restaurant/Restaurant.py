@@ -24,8 +24,8 @@ class TaskWrapper:
         self.data_savers = data_savers
 
 
-    def __len__(self):
-        return len(self.task_cores)
+    def getSize(self):
+        return self.task_cores.getSize()
 
 
     def __iter__(self):
@@ -141,9 +141,17 @@ class Restaurant:
 
         full_signals = desired_signals
 
-        self.p.map(carryOut, TaskWrapper(self.servant.receiveOrders(desired_signals), names_of_signals,
+        start = 0
+        record_in_batch = 100 * 1000
+
+        task_sequence = TaskWrapper(self.servant.receiveOrders(desired_signals), names_of_signals,
                                          references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
-        net_withdrawal_of_signals, relation, balance, self.draftSieve, full_signals, data_savers), chunksize = 10)
+        net_withdrawal_of_signals, relation, balance, self.draftSieve, full_signals, data_savers)
+
+        while start < task_sequence.getSize():
+            self.p.map(carryOut, itertools.islice(task_sequence, start, start + record_in_batch) , chunksize = 10)
+            start += record_in_batch
+
 
         self.p.close()
         self.p.join()
