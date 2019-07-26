@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import itertools
 from copy import copy
 from multiprocessing import Pool, Manager, Lock
 
@@ -9,8 +8,8 @@ from restaurant.Sieve import Sieve
 
 class TaskWrapper:
     def __init__(self, task_cores, names_of_signals, references_of_signals, standard_deviation_of_signals,
-                 expected_return_of_signals,net_withdrawal_of_signals, relation, balance,  draftSieve,
-                 full_signals,data_savers):
+                 expected_return_of_signals, net_withdrawal_of_signals, relation, balance, draftSieve,
+                 full_signals, data_savers):
         self.task_cores = task_cores
         self.names_of_signals = names_of_signals
         self.references_of_signals = references_of_signals
@@ -23,18 +22,16 @@ class TaskWrapper:
         self.full_signals = full_signals
         self.data_savers = data_savers
 
-
     def getSize(self):
         return self.task_cores.getSize()
 
-
     def __iter__(self):
-
         for task in self.task_cores:
             yield (task, (
-        self.names_of_signals, self.references_of_signals, self.standard_deviation_of_signals, self.expected_return_of_signals,
-        self.net_withdrawal_of_signals, self.relation, self.balance), self.draftSieve, self.full_signals, self.data_savers)
-
+                self.names_of_signals, self.references_of_signals, self.standard_deviation_of_signals,
+                self.expected_return_of_signals,
+                self.net_withdrawal_of_signals, self.relation, self.balance), self.draftSieve, self.full_signals,
+                   self.data_savers)
 
 
 def collect_active_signals(row, full_signals):
@@ -74,8 +71,8 @@ def carryOut(task):
     if draftSieve is not None:
         drawback_ratio, exp_return_ratio, sharp_ratio, pl_ratio, max_active_num, poison_mushroom = draftSieve
         sieve = Sieve(drawback_ratio=drawback_ratio, exp_return_ratio=exp_return_ratio,
-                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num=max_active_num, poison_mushroom = poison_mushroom)
-
+                      sharp_ratio=sharp_ratio, pl_ratio=pl_ratio, max_active_num=max_active_num,
+                      poison_mushroom=poison_mushroom)
 
     chef = Chef(
         names_of_signals=names_of_signals,
@@ -92,12 +89,12 @@ def carryOut(task):
 
     dish = chef.handleOrder(st)
 
-
     filtered_df = dish.loc[dish.apply(sieve.filter, axis=1), :]
     row, column = filtered_df.shape
 
     if row == 0:
-        print 'Task {} at ({}/{}) without no answer '.format(st.no, (st.start / st.page_size), (st.record_size / st.page_size))
+        print 'Task {} at ({}/{}) without no answer '.format(st.no, (st.start / st.page_size),
+                                                             (st.record_size / st.page_size))
         print st.reportProgress()
         return True
 
@@ -130,7 +127,6 @@ class Restaurant:
         return self.task_lock
 
     def serveCustomer(self, desired_signals, data_savers):
-
         names_of_signals = desired_signals
         references_of_signals = self.servant.getReferencesOfSignals()
         standard_deviation_of_signals = self.servant.getStandardDeviationOfSignals()
@@ -141,23 +137,14 @@ class Restaurant:
 
         full_signals = desired_signals
 
-        start = 0
-        record_in_batch = 100 * 1000
-
-        task_sequence = TaskWrapper(self.servant.receiveOrders(desired_signals), names_of_signals,
-                                         references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
-        net_withdrawal_of_signals, relation, balance, self.draftSieve, full_signals, data_savers)
-
-        while start < task_sequence.getSize():
-            self.p.map(carryOut, itertools.islice(task_sequence, start, start + record_in_batch) , chunksize = 10)
-            start += record_in_batch
-
+        self.p.imap_unordered(carryOut, TaskWrapper(self.servant.receiveOrders(desired_signals), names_of_signals,
+                                                    references_of_signals, standard_deviation_of_signals,
+                                                    expected_return_of_signals,
+                                                    net_withdrawal_of_signals, relation, balance, self.draftSieve,
+                                                    full_signals, data_savers), chunksize=100)
 
         self.p.close()
         self.p.join()
 
-
     def setFilter(self, draftSieve):
         self.draftSieve = draftSieve
-
-
