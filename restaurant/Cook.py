@@ -47,7 +47,7 @@ class InnerIterable:
         page_size = min(default_page_size, record_size_per_task)
         self.itemCount = len(self.urgentDish) * int(math.ceil(record_size_per_task / page_size))
 
-    def __len__(self):
+    def getSize(self):
         return self.itemCount
 
     def __iter__(self):
