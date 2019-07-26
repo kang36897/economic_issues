@@ -141,9 +141,9 @@ class Restaurant:
 
         full_signals = desired_signals
 
-        self.p.map(carryOut, TaskWrapper(self.servant.receiveOrders(desired_signals), names_of_signals,
+        self.p.imap_unordered(carryOut, TaskWrapper(self.servant.receiveOrders(desired_signals), names_of_signals,
                                          references_of_signals, standard_deviation_of_signals, expected_return_of_signals,
-        net_withdrawal_of_signals, relation, balance, self.draftSieve, full_signals, data_savers), chunksize = 10)
+        net_withdrawal_of_signals, relation, balance, self.draftSieve, full_signals, data_savers), chunksize = 100)
 
         self.p.close()
         self.p.join()
