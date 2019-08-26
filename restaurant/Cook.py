@@ -23,8 +23,6 @@ def calculateMultiple(row, risk_ratio, balance):
     return math.floor(math.fabs((balance * risk_ratio[key] * 1.0 / 100) / (row[u'净值回撤'] / (row[u'最小手数'] / 0.01))))
 
 
-
-
 def calculateHistory(row):
     return round((row[u'检查日期'] - row[u'运行开始']).days / 30.5)
 
@@ -32,6 +30,12 @@ def calculateHistory(row):
 def pickUpBasedOn(row, criteria):
     return row['history'] > criteria[u'history'] and abs(row[u'方差倍数']) < criteria[u'variance']
 
+
+class Condiment:
+    def __init__(self, maxlots, minlots, steplength):
+        self.maxlots = maxlots if maxlots is not None else 10
+        self.minlots = minlots if minlots is not None else 0.01
+        self.steplength = steplength if steplength is not None else 0.01
 
 
 class InnerIterable:
@@ -52,7 +56,6 @@ class InnerIterable:
 
     def __iter__(self):
 
-
         for n in range(len(self.urgentDish)):
             tables = copy(self.normalTable)
             tables.insert(0, self.urgentTable)
@@ -65,6 +68,7 @@ class InnerIterable:
             for item in st:
                 st.isSeed = False
                 yield item
+
 
 class Cook:
 
@@ -83,6 +87,9 @@ class Cook:
         self.possibleTimes = None
         self.referencesOfSignals = None
         self.targetSignals = None
+
+    def collect(self, condiment):
+        self.condiment = condiment
 
     def getSignalsInRelation(self):
         return self.signalsInRelation
@@ -122,7 +129,6 @@ class Cook:
                 v = self.__relationship.loc[row, column]
                 self.relationOfSignals[(row, column)] = v
                 self.relationOfSignals[(column, row)] = v
-
 
     def identifyPoisonMushroom(self, relevance):
         for (key, value) in self.relationOfSignals.items():
@@ -193,7 +199,7 @@ class Cook:
         if self.targetSignals is not None:
             return self.targetSignals
 
-        temp = self.__signal_info[self.__signal_info.apply(pickUpBasedOn, axis = 1, args = (criteria,))]
+        temp = self.__signal_info[self.__signal_info.apply(pickUpBasedOn, axis=1, args=(criteria,))]
         self.targetSignals = list(temp.index)
         return self.targetSignals
 
@@ -261,7 +267,8 @@ class Cook:
     def describeDishes(self, possible_times):
         dishes = {}
         for key, value in possible_times.items():
-            dishes[key] = [x for x in np.arange(0.0, value, step=np.float64(0.01), dtype=np.float64)]
+            dishes[key] = [x for x in np.arange(max(0.0, self.condiment.minlots), min(value, self.condiment.maxlots),
+                                                step=np.float64(self.condiment.steplength), dtype=np.float64)]
             dishes[key].append(value)
         return dishes
 
