@@ -6,6 +6,9 @@ from Chef import Chef
 from restaurant.Sieve import Sieve
 
 
+
+
+
 class TaskWrapper:
     def __init__(self, task_cores, names_of_signals, references_of_signals, standard_deviation_of_signals,
                  expected_return_of_signals, net_withdrawal_of_signals, relation, balance, draftSieve,

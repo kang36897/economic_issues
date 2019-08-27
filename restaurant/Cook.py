@@ -9,7 +9,7 @@ from copy import copy
 import math
 
 
-def calculateMultiple(row, risk_ratio, balance):
+def calculateMultiple(row, risk_ratio, balance = 10000):
     key = row[u'信号名称']
     if row[u'最小手数'] == 0:
         return 0
@@ -17,12 +17,10 @@ def calculateMultiple(row, risk_ratio, balance):
     if row[u'净值回撤'] == 0:
         return 0
 
-    if key not in risk_ratio:
+    if  risk_ratio is None or key not in risk_ratio:
         return 0
 
     return math.floor(math.fabs((balance * risk_ratio[key] * 1.0 / 100) / (row[u'净值回撤'] / (row[u'最小手数'] / 0.01))))
-
-
 
 
 def calculateHistory(row):
@@ -32,6 +30,12 @@ def calculateHistory(row):
 def pickUpBasedOn(row, criteria):
     return row['history'] > criteria[u'history'] and abs(row[u'方差倍数']) < criteria[u'variance']
 
+
+class Condiment:
+    def __init__(self, maxlots=None, minlots=None, steplength=None):
+        self.maxlots = maxlots if maxlots is not None else 10
+        self.minlots = minlots if minlots is not None else 0.00
+        self.steplength = steplength if steplength is not None else 0.01
 
 
 class InnerIterable:
@@ -52,7 +56,6 @@ class InnerIterable:
 
     def __iter__(self):
 
-
         for n in range(len(self.urgentDish)):
             tables = copy(self.normalTable)
             tables.insert(0, self.urgentTable)
@@ -65,6 +68,7 @@ class InnerIterable:
             for item in st:
                 st.isSeed = False
                 yield item
+
 
 class Cook:
 
@@ -83,6 +87,10 @@ class Cook:
         self.possibleTimes = None
         self.referencesOfSignals = None
         self.targetSignals = None
+        self.condiment = None
+
+    def collect(self, condiment):
+        self.condiment = condiment
 
     def getSignalsInRelation(self):
         return self.signalsInRelation
@@ -123,7 +131,6 @@ class Cook:
                 self.relationOfSignals[(row, column)] = v
                 self.relationOfSignals[(column, row)] = v
 
-
     def identifyPoisonMushroom(self, relevance):
         for (key, value) in self.relationOfSignals.items():
             if value > relevance:
@@ -142,7 +149,7 @@ class Cook:
     def getInvolvedSignals(self):
         return self.involvedSignals
 
-    def collectTomato(self, inputFile, risk_ratio, balance):
+    def collectTomato(self, inputFile, risk_ratio = None, balance = 10000):
         df = pd.read_excel(inputFile, sheet_name=0, na_values=['-', '#N/A', 'NaN'])
         # delete unneeded columns
         if u'备注' in df.columns:
@@ -193,7 +200,7 @@ class Cook:
         if self.targetSignals is not None:
             return self.targetSignals
 
-        temp = self.__signal_info[self.__signal_info.apply(pickUpBasedOn, axis = 1, args = (criteria,))]
+        temp = self.__signal_info[self.__signal_info.apply(pickUpBasedOn, axis=1, args=(criteria,))]
         self.targetSignals = list(temp.index)
         return self.targetSignals
 
@@ -261,8 +268,11 @@ class Cook:
     def describeDishes(self, possible_times):
         dishes = {}
         for key, value in possible_times.items():
-            dishes[key] = [x for x in np.arange(0.0, value, step=np.float64(0.01), dtype=np.float64)]
-            dishes[key].append(value)
+            start = max(0.0, self.condiment.minlots)
+            stop = min(value, self.condiment.maxlots)
+            dishes[key] = [np.around(x, decimals=2) for x in np.arange(start, stop,
+                                                                       step=np.float64(self.condiment.steplength),
+                                                                       dtype=np.float64)]
         return dishes
 
     def loadPlate(self, dish, filter):

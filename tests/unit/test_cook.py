@@ -4,7 +4,7 @@ from itertools import product
 from os import path
 
 import numpy as np
-from restaurant.Cook import Cook
+from restaurant.Cook import Cook, Condiment
 from restaurant.SmallTask import SmallTask
 
 from restaurant.Utils import compareListIgnoreOrder
@@ -15,6 +15,44 @@ class CookTest(unittest.TestCase):
         hm = Cook()
         hm.collectTomato(path.abspath("resources/signals.xlsx"))
 
+
+    def test_describeDishes(self):
+        hm = Cook()
+
+        condiment = Condiment()
+        hm.collect(condiment)
+        possible_times = {'a' : 11.00}
+        dishes = hm.describeDishes(possible_times)
+        expected = [ np.around( np.float64(x) , decimals=2) for x in np.arange(0,  10, step = np.float64(0.01))]
+        self.assertEquals(expected, dishes['a'])
+
+        possible_times = {'b' : 98}
+        condiment = Condiment(maxlots= 50)
+        hm.collect(condiment)
+        dishes = hm.describeDishes(possible_times)
+        expected = [np.around( np.float64(x) , decimals=2) for x in np.arange(0, 50, step=np.float64(0.01))]
+        self.assertEquals(expected, dishes['b'])
+
+        condiment = Condiment(minlots= 0.1)
+        hm.collect(condiment)
+        possible_times = {'c': 12}
+        dishes = hm.describeDishes(possible_times)
+        expected = [np.around( np.float64(x) , decimals=2) for x in np.arange(0.1, 10, step=np.float64(0.01))]
+        self.assertEquals(expected, dishes['c'])
+
+        condiment = Condiment(steplength=0.5)
+        hm.collect(condiment)
+        possible_times = {'d': 12}
+        dishes = hm.describeDishes(possible_times)
+        expected = [np.around(np.float64(x), decimals=2) for x in np.arange(0, 10, step=np.float64(0.5))]
+        self.assertEquals(expected, dishes['d'])
+
+        condiment = Condiment(maxlots = 1, minlots = 0.05, steplength = 0.1)
+        hm.collect(condiment)
+        possible_times = {'d': 2.15}
+        dishes = hm.describeDishes(possible_times)
+        expected = [np.around(np.float64(x), decimals=2) for x in np.arange(0.05, 1.01, step=np.float64(0.1))]
+        self.assertEquals(expected, dishes['d'])
 
     def test_getSignalsInRelation_after_collectPotato(self):
         expect_columns = [u'CJM622', u'CJM815', u'CJM995', u'DEMOZ', u'DM0066', u'DM8034', u'USG']
@@ -153,14 +191,9 @@ class CookTest(unittest.TestCase):
     def test_getExpectedReturnOfSignals(self):
 
         expected_expected_return_of_signals = {
-            u'CJM622': np.float64(2015.91),
-            u'CJM815': np.float64(537.8477),
-            u'CJM995': np.float64(1946.6182),
-            u'DEMOZ': np.float64(793.1733),
-            u'DM0066': np.float64(5383.8790),
-            u'DM8034': np.float64(670.6909),
-            u'LYP': np.float64(2002.4452),
-            u'USG': np.float64(280.8301)
+            u'CJM622': np.float64(2163.80),
+            u'CJM815': np.float64(543.3),
+
         }
 
         hm = Cook()
@@ -168,7 +201,7 @@ class CookTest(unittest.TestCase):
         hm.collectTomato(path.abspath("resources/signals.xlsx"))
 
         for key, value in expected_expected_return_of_signals.items():
-            self.assertEqual(value, hm.getExpectedReturnOfSignals()[key])
+            self.assertEqual(value, hm.getExpectedReturnOfSignals()[key], msg="for {} not match".format(key))
 
 
     def test_getNetWithdrawalOfSignals(self):
@@ -233,10 +266,11 @@ class CookTest(unittest.TestCase):
         possible_times = {u'CJM622': np.float64(0.1)}
 
         expected = {u'CJM622': [x for x in np.arange(0, np.float64(0.1), step= np.float64(0.01), dtype= np.float64)]}
-        expected[u'CJM622'].append(np.float64(0.1))
+
         print expected
 
         hm = Cook()
+        hm.collect(Condiment())
         print hm.describeDishes(possible_times)
         for key, value in expected.items():
             self.assertTrue(compareListIgnoreOrder(value, hm.describeDishes(possible_times)[key]))

@@ -4,7 +4,7 @@ from datetime import datetime
 from os import path
 
 from restaurant.Chain import Chain
-from restaurant.Cook import Cook
+from restaurant.Cook import Cook, Condiment
 from restaurant.DataSaver import CSVSaver, DBSaver
 import pandas as pd
 
@@ -36,10 +36,17 @@ if __name__ == '__main__':
 
     config_data = load_config(config_file)
 
+    maxlots = config_data['maxlots'] if 'maxlots' in config_data else None
+    minlots = config_data['minlots'] if 'minlots' in config_data else None
+    steplength = config_data['steplength'] if 'steplength' in config_data else None
+    condiment = Condiment(maxlots = maxlots, minlots = minlots, steplength = steplength)
+
     cook = Cook()
+    cook.collect(condiment)
+
     cook.collectPotato(path.join(input_directory, config_data["relation_file"]))
     cook.collectTomato(path.join(input_directory, config_data["signal_file"]),
-                       config_data['risk_ratio'], config_data['balance'])
+                       risk_ratio = config_data['risk_ratio'] if 'risk_ratio' in config_data else None,  balance=config_data['balance'])
     cook.sortInvolvedSignals()
 
     if "filter" in config_data and "relevance" in config_data["filter"]:
