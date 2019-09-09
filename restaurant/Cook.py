@@ -2,9 +2,9 @@
 
 import numpy as np
 import pandas as pd
-from itertools import ifilter
 
-from SmallTask import SmallTask, calculate_record_size
+
+from restaurant.SmallTask import SmallTask, calculate_record_size
 from copy import copy
 import math
 
@@ -261,7 +261,7 @@ class Cook:
         (urgentTable, _) = self.pickUrgentOrder(self.getPossibleTimes(), tablesInCall)
         dishes = self.describeDishes(self.getPossibleTimes())
 
-        normalTable = [x for x in ifilter(lambda x: x != urgentTable, tablesInCall)]
+        normalTable = [x for x in filter(lambda x: x != urgentTable, tablesInCall)]
 
         return InnerIterable(normalTable, urgentTable, dishes)
 

@@ -2,7 +2,7 @@
 from copy import copy
 from multiprocessing import Pool, Manager, Lock
 
-from Chef import Chef
+from restaurant.Chef import Chef
 from restaurant.Sieve import Sieve
 
 
@@ -60,7 +60,8 @@ def compensate(df, desired_signals, full_signals):
     ideal_columns = copy(full_signals)
     ideal_columns.extend(shared_columns)
 
-    df['active_num'] = df.apply(collect_active_signals, args=(full_signals,), axis=1)
+    # df.loc[:,'active_num'] = df.apply(collect_active_signals, args=(full_signals,), axis=1)
+    df = df.assign(active_num = df.apply(collect_active_signals, args=(full_signals,), axis=1))
     ideal_columns.insert(0, 'active_num')
     return df[ideal_columns]
 
@@ -96,9 +97,9 @@ def carryOut(task):
     row, column = filtered_df.shape
 
     if row == 0:
-        print 'Task {} at ({}/{}) without no answer '.format(st.no, (st.start / st.page_size),
-                                                             (st.record_size / st.page_size))
-        print st.reportProgress()
+        print('Task {} at ({}/{}) without no answer '.format(st.no, (st.start / st.page_size),
+                                                             (st.record_size / st.page_size)))
+        print(st.reportProgress())
         return True
 
     final_df = compensate(filtered_df, names_of_signals, full_signals)
@@ -108,7 +109,7 @@ def carryOut(task):
     for saver in data_savers:
         saver.save(final_df, desired_signals=filePrefix)
 
-    print st.reportProgress()
+    print(st.reportProgress())
 
     return True
 
