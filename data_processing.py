@@ -28,7 +28,7 @@ def selectPossibleTimes(row, target_signals):
 
 if __name__ == '__main__':
     start_time = datetime.now()
-    print "begin to predict ........."
+    print("begin to predict .........")
 
     input_directory = path.abspath("inputs")
     config_file = path.join(input_directory, "config.json")
@@ -54,26 +54,26 @@ if __name__ == '__main__':
 
     target_criteria = config_data['target_signals']
     target_signals = cook.pickUpTargetSignals(target_criteria)
-    print 'Target signals:\n {}\n'.format(target_signals)
+    print('Target signals:\n {}\n'.format(target_signals))
 
-    print 'Possible Times:'
+    print('Possible Times:')
     columns = cook.getPossibleTimes().keys()
     possibleTimes = cook.getPossibleTimes();
     pt = pd.DataFrame(data= [ possibleTimes[key] for key in possibleTimes.keys()], index= [key for key in columns],
                       columns = ['possible_times'])
     pt.index.name = 'signal'
     pt = pt.reset_index().sort_values(by=['possible_times'], ascending=False)
-    print pt[pt.apply(selectPossibleTimes, axis=1, args=(target_signals,))]
-    print '\n'
+    print(pt[pt.apply(selectPossibleTimes, axis=1, args=(target_signals,))])
+    print('\n')
 
-    print 'Poison Mushroom:'
+    print('Poison Mushroom:')
     pm = pd.DataFrame(data = cook.getPoisionMushroom(), columns=['LEFT', 'RIGHT'])
     count, _ = pm.shape
     if count == 0:
-        print 'There are no poison mushrooms'
+        print('There are no poison mushrooms')
     else:
-        print pm
-    print '\n'
+        print(pm)
+    print('\n')
 
     csv_saver = CSVSaver(path.abspath("outputs"))
 
@@ -111,5 +111,5 @@ if __name__ == '__main__':
     chain.doBusiness(target_signals, savers, draftSieve)
 
     time_elapsed = datetime.now() - start_time
-    print "Prediction is completed ........."
-    print 'Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed)
+    print("Prediction is completed .........")
+    print('Time elapsed (hh:mm:ss.ms) {}'.format(time_elapsed))

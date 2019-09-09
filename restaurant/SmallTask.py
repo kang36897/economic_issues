@@ -3,7 +3,7 @@ import math
 from itertools import islice
 from itertools import product
 
-from Utils import compareListIgnoreOrder
+from restaurant.Utils import compareListIgnoreOrder
 
 
 def calculate_record_size(columns_seeds):
