@@ -55,7 +55,10 @@ class InnerIterable:
         return self.itemCount
 
     def __iter__(self):
+        return self.generator()
 
+
+    def generator(self):
         for n in range(len(self.urgentDish)):
             tables = copy(self.normalTable)
             tables.insert(0, self.urgentTable)
@@ -191,8 +194,11 @@ class Cook:
         self.referencesOfSignals = {}
 
         for item in self.involvedSignals:
-            self.possibleTimes[item] = self.__signal_info.loc[item, u'最小手数'] * self.__signal_info.loc[
+            possible = self.__signal_info.loc[item, u'最小手数'] * self.__signal_info.loc[
                 item, u'测试倍数']
+
+            if possible > 0:
+                self.possibleTimes[item] = possible
 
             self.referencesOfSignals[item] = self.__signal_info.loc[item, u'最小手数']
 

@@ -50,7 +50,7 @@ class DBSaver(Saver):
         engine = create_engine(self.database_connection, echo=False)
         rounded_df = df.round(2)
         rounded_df.to_sql(name=self.table_name, con=engine, if_exists=self.reaction, index=False,
-                          dtype=self.column_dtype)
+                          dtype=self.column_dtype, chunksize=3000)
 
     @staticmethod
     def createSaver(db_config, involved_signals):
