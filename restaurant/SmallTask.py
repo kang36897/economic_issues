@@ -47,11 +47,15 @@ class SmallTask:
 
 
     def next(self):
+
         if self.isDone():
             raise StopIteration;
 
-
         return self.generateNextTask()
+
+    __next__ = next
+
+
 
     def generateDataSource(self):
         return product(*self.column_seeds)

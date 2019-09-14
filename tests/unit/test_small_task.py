@@ -16,12 +16,12 @@ class SmallTaskTest(unittest.TestCase):
         expected = [(1, 0, 0, 0), (1, 0, 0, 1), (1, 0, 0, 2)]
 
         self.assertEquals(expected, [item for item in firstBatch.generateFrame()])
-        print firstBatch.reportProgress()
+        print(firstBatch.reportProgress())
 
         secondBatch = next(iterator)
         expected = [(1, 1, 0, 0), (1, 1, 0, 1), (1, 1, 0, 2)]
         self.assertEquals(expected, [item for item in secondBatch.generateFrame()])
-        print secondBatch.reportProgress()
+        print(secondBatch.reportProgress())
 
         self.assertRaises(StopIteration, next, iterator)
 
@@ -34,8 +34,8 @@ class SmallTaskTest(unittest.TestCase):
     def test_generateDataSource(self):
         task = SmallTask(0, ["A", 'B'], [[1], [0, 1]], default_page_size= 3)
         it = task.generateDataSource()
-        self.assertEqual(it.next(),(1,0))
-        self.assertEqual(it.next(),(1,1))
+        self.assertEqual(next(it),(1,0))
+        self.assertEqual(next(it),(1,1))
 
 
     def test_generateFrame(self):
@@ -79,9 +79,9 @@ class SmallTaskTest(unittest.TestCase):
         task = SmallTask(0, ["A", 'B'], [[0, 1], [0, 1, 2]], default_page_size=3)
         task.generateFrame()
 
-        ntask = task.generateNextTask()
+        ntask = next(task)
 
-        self.assertNotEqual(task, ntask)
+        self.assertNotEqual(next(task), ntask)
 
     def test_equals_new(self):
         t1 = SmallTask(0, ["A", 'B'], [[0, 1], [0, 1, 2]], default_page_size=3)
